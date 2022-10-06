@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Sports on Jetson&#39;s Sports Data Blog</title>
+    <link>https://jetsonku.github.io/categories/sports/</link>
+    <description>Recent content in Sports on Jetson&#39;s Sports Data Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 06 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/categories/sports/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>First Post</title>
+      <link>https://jetsonku.github.io/2022/10/06/first-post/</link>
+      <pubDate>Thu, 06 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/2022/10/06/first-post/</guid>
+      <description>This is my first post. Hello world.</description>
+    </item>
+    
+  </channel>
+</rss>
