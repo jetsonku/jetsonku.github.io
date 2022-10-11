@@ -6,7 +6,17 @@
     <description>Recent content in Posts on Jetson&#39;s Sports Data Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 06 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 11 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Big Ten CFB Avg Plays</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2022/10/11/big-ten-cfb-avg-plays/</link>
+      <pubDate>Tue, 11 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2022/10/11/big-ten-cfb-avg-plays/</guid>
+      <description>Let’s take a look at some averages from the 2021-22 NCAA Football season. We want to look at average offensive plays per game from Big Ten teams. In order to do this, we will first load in the tidyverse library and pull the data as a csv from this url. Once we have the data, it will be stored in a variable called fblogs.
+library(tidyverse)## ── Attaching packages ─────────────────────────────────────── tidyverse 1.</description>
+    </item>
+    
     <item>
       <title>First Post</title>
       <link>https://jetsonku.github.io/sportsdatablog/2022/10/06/first-post/</link>
