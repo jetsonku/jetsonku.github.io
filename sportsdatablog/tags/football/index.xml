@@ -6,7 +6,18 @@
     <description>Recent content in Football on Jetson&#39;s Sports Data Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 18 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/tags/football/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 20 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/tags/football/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CFB Recruiting Ratings &amp; Wins</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2022/10/20/cfb-recruiting-ratings-wins/</link>
+      <pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2022/10/20/cfb-recruiting-ratings-wins/</guid>
+      <description>Today we’re analyzing recruiting rankings and seeing if they have any impact on winning in college football. Our intuition says… maybe? Let’s find out.
+We’ll load in tidyverse and our datasets with the team records by year and recruiting rankings.
+library(tidyverse)## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──## ✔ ggplot2 3.3.6 ✔ purrr 0.3.4## ✔ tibble 3.1.8 ✔ dplyr 1.0.9## ✔ tidyr 1.2.0 ✔ stringr 1.</description>
+    </item>
+    
     <item>
       <title>First Play Interceptions</title>
       <link>https://jetsonku.github.io/sportsdatablog/2022/10/18/first-play-interceptions/</link>
