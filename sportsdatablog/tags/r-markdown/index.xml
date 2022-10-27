@@ -6,7 +6,16 @@
     <description>Recent content in R Markdown on Jetson&#39;s Sports Data Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 20 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/tags/r-markdown/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 25 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/tags/r-markdown/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Maryland Football YPP</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2022/10/25/maryland-football-ypp/</link>
+      <pubDate>Tue, 25 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2022/10/25/maryland-football-ypp/</guid>
+      <description>With 8 games complete in the 2022 college football season, we already have (or should have) a decent handle on where our favorite teams stand in the NCAA D1 universe. Texas A&amp;amp;M is not who many thought they were, while Syracuse and Kansas are among the teams that have exceeded expectations thus far. Today we’ll be looking at two measures of a team’s efficiency: Offensive/Defensive Yards per Play, and how they relate to a team’s wins that season.</description>
+    </item>
+    
     <item>
       <title>CFB Recruiting Ratings &amp; Wins</title>
       <link>https://jetsonku.github.io/sportsdatablog/2022/10/20/cfb-recruiting-ratings-wins/</link>
