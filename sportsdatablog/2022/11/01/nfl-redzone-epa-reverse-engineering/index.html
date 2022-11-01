@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.104.3" />
+
+
+<title>NFL Redzone EPA Reverse Engineering - Jetson&#39;s Sports Data Blog</title>
+<meta property="og:title" content="NFL Redzone EPA Reverse Engineering - Jetson&#39;s Sports Data Blog">
+
+
+  <link href='https://jetsonku.github.io/sportsdatablog/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/sportsdatablog/css/fonts.css" media="all">
+<link rel="stylesheet" href="/sportsdatablog/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/sportsdatablog/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/sportsdatablog/about/">About</a></li>
+    
+    <li><a href="https://github.com/jetsonku">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/jetsonku">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">6 min read</span>
+    
+
+    <h1 class="article-title">NFL Redzone EPA Reverse Engineering</h1>
+
+    
+    <span class="article-date">2022-11-01</span>
+    
+
+    <div class="article-content">
+      
+
+
+<p>This blog post is a spin off of Josh Hermsmeyer of 538’s article on teams in red zones. We want to look at the data to assess his theory that teams’ EPA will regress to the mean over the course of a season.</p>
+<p>We’ll start by loading in play by play data for the 2022 season so far using nflreadr.</p>
+<pre class="r"><code>library(nflreadr)
+library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
+## ✔ ggplot2 3.3.6     ✔ purrr   0.3.4
+## ✔ tibble  3.1.8     ✔ dplyr   1.0.9
+## ✔ tidyr   1.2.0     ✔ stringr 1.4.1
+## ✔ readr   2.1.2     ✔ forcats 0.5.2
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>pbp &lt;- load_pbp(seasons = 2022) </code></pre>
+<p>We’re going to start with Miami’s data, who was specifically mentioned in the article. We’re looking at all redzone plays through Week 3. This is mostly a sanity check to ensure we’re working with the same data.</p>
+<pre class="r"><code>mia_startrz &lt;- pbp %&gt;% filter(posteam == &quot;MIA&quot;, yardline_100 &lt; 20, week &lt; 4) %&gt;% filter(!play_type %in% c(&#39;extra_point&#39;, &#39;no_play&#39;, &#39;qb_kneel&#39;))
+mia_startrz</code></pre>
+<pre><code>## ── nflverse play by play data ──────────────────────────────────────────────────</code></pre>
+<pre><code>## ℹ Data updated: 2022-11-01 05:12:29 EDT</code></pre>
+<pre><code>## # A tibble: 20 × 372
+##    play_id game_id old_g…¹ home_…² away_…³ seaso…⁴  week posteam poste…⁵ defteam
+##      &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;  
+##  1     499 2022_0… 202209… MIA     NE      REG         1 MIA     home    NE     
+##  2     523 2022_0… 202209… MIA     NE      REG         1 MIA     home    NE     
+##  3    3475 2022_0… 202209… MIA     NE      REG         1 MIA     home    NE     
+##  4    1018 2022_0… 202209… BAL     MIA     REG         2 MIA     away    BAL    
+##  5    1052 2022_0… 202209… BAL     MIA     REG         2 MIA     away    BAL    
+##  6    2358 2022_0… 202209… BAL     MIA     REG         2 MIA     away    BAL    
+##  7    2382 2022_0… 202209… BAL     MIA     REG         2 MIA     away    BAL    
+##  8    2404 2022_0… 202209… BAL     MIA     REG         2 MIA     away    BAL    
+##  9    2977 2022_0… 202209… BAL     MIA     REG         2 MIA     away    BAL    
+## 10    3001 2022_0… 202209… BAL     MIA     REG         2 MIA     away    BAL    
+## 11    3023 2022_0… 202209… BAL     MIA     REG         2 MIA     away    BAL    
+## 12    3936 2022_0… 202209… BAL     MIA     REG         2 MIA     away    BAL    
+## 13    3961 2022_0… 202209… BAL     MIA     REG         2 MIA     away    BAL    
+## 14     671 2022_0… 202209… MIA     BUF     REG         3 MIA     home    BUF    
+## 15     732 2022_0… 202209… MIA     BUF     REG         3 MIA     home    BUF    
+## 16     753 2022_0… 202209… MIA     BUF     REG         3 MIA     home    BUF    
+## 17    1405 2022_0… 202209… MIA     BUF     REG         3 MIA     home    BUF    
+## 18    1426 2022_0… 202209… MIA     BUF     REG         3 MIA     home    BUF    
+## 19    3178 2022_0… 202209… MIA     BUF     REG         3 MIA     home    BUF    
+## 20    3246 2022_0… 202209… MIA     BUF     REG         3 MIA     home    BUF    
+## # … with 362 more variables: side_of_field &lt;chr&gt;, yardline_100 &lt;dbl&gt;,
+## #   game_date &lt;chr&gt;, quarter_seconds_remaining &lt;dbl&gt;,
+## #   half_seconds_remaining &lt;dbl&gt;, game_seconds_remaining &lt;dbl&gt;,
+## #   game_half &lt;chr&gt;, quarter_end &lt;dbl&gt;, drive &lt;dbl&gt;, sp &lt;dbl&gt;, qtr &lt;dbl&gt;,
+## #   down &lt;dbl&gt;, goal_to_go &lt;dbl&gt;, time &lt;chr&gt;, yrdln &lt;chr&gt;, ydstogo &lt;dbl&gt;,
+## #   ydsnet &lt;dbl&gt;, desc &lt;chr&gt;, play_type &lt;chr&gt;, yards_gained &lt;dbl&gt;,
+## #   shotgun &lt;dbl&gt;, no_huddle &lt;dbl&gt;, qb_dropback &lt;dbl&gt;, qb_kneel &lt;dbl&gt;, …</code></pre>
+<p>To further check his work, we can calculate the EPA, which he says is 9.</p>
+<pre class="r"><code>mia_startrz %&gt;% summarise(total_epa = sum(epa))</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##   total_epa
+##       &lt;dbl&gt;
+## 1      9.00</code></pre>
+<p>Let’s see if they have regressed to the mean any further since this article was written by calculating their EPA through 8 weeks.</p>
+<pre class="r"><code>mia_rz &lt;- pbp %&gt;% filter(posteam == &quot;MIA&quot;, yardline_100 &lt; 20) %&gt;% filter(!play_type %in% c(&#39;extra_point&#39;, &#39;no_play&#39;, &#39;qb_kneel&#39;))
+mia_rz %&gt;% summarise(total_epa = sum(epa))</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##   total_epa
+##       &lt;dbl&gt;
+## 1      10.0</code></pre>
+<p>They’ve actually improved. Interesting. Let’s compare them to the rest of our teams and try and generalize this theory. We’re making two dataframes with EPAs and play counts for all teams through 3 weeks and through 8 weeks.</p>
+<pre class="r"><code>all_startrz &lt;- pbp %&gt;% filter(yardline_100 &lt; 20, week &lt; 4) %&gt;% filter(!play_type %in% c(&#39;extra_point&#39;, &#39;no_play&#39;, &#39;qb_kneel&#39;))
+all_startrz &lt;- all_startrz %&gt;% group_by(posteam) %&gt;% summarise(start_total_plays = n(), start_total_epa = sum(epa))
+all_restrz &lt;- pbp %&gt;% filter(yardline_100 &lt; 20) %&gt;% filter(!play_type %in% c(&#39;extra_point&#39;, &#39;no_play&#39;, &#39;qb_kneel&#39;))
+all_restrz &lt;- all_restrz %&gt;% group_by(posteam) %&gt;% summarise(overall_total_plays = n(), overall_total_epa = sum(epa))</code></pre>
+<p>To compare them, we’re joining these two dataframes and plotting them up.</p>
+<pre class="r"><code>comp &lt;- left_join(all_startrz, all_restrz, by = &quot;posteam&quot;)
+comp</code></pre>
+<pre><code>## # A tibble: 32 × 5
+##    posteam start_total_plays start_total_epa overall_total_plays overall_total…¹
+##    &lt;chr&gt;               &lt;int&gt;           &lt;dbl&gt;               &lt;int&gt;           &lt;dbl&gt;
+##  1 ARI                    37          -1.11                   95         -3.35  
+##  2 ATL                    34           3.02                   82         12.4   
+##  3 BAL                    29           9.33                   91          5.57  
+##  4 BUF                    38           8.41                   73         -0.701 
+##  5 CAR                    22          -0.828                  53         -0.0861
+##  6 CHI                    19           4.30                   78         -8.21  
+##  7 CIN                    39          -6.36                   84          3.58  
+##  8 CLE                    43           7.72                   96          9.81  
+##  9 DAL                    17           1.83                   57         10.7   
+## 10 DEN                    29         -16.4                    65        -29.0   
+## # … with 22 more rows, and abbreviated variable name ¹​overall_total_epa</code></pre>
+<p>And now we make a dumbbell plot. Week 3 EPA is in green and Week 8 is in blue.</p>
+<pre class="r"><code>library(tidyverse)
+library(ggalt)</code></pre>
+<pre><code>## Registered S3 methods overwritten by &#39;ggalt&#39;:
+##   method                  from   
+##   grid.draw.absoluteGrob  ggplot2
+##   grobHeight.absoluteGrob ggplot2
+##   grobWidth.absoluteGrob  ggplot2
+##   grobX.absoluteGrob      ggplot2
+##   grobY.absoluteGrob      ggplot2</code></pre>
+<pre class="r"><code>ggplot() + 
+  geom_dumbbell(
+    data=comp, 
+    aes(y=reorder(posteam, overall_total_epa), x=overall_total_epa, xend=start_total_epa),
+    size = 1,
+    color = &quot;grey&quot;,
+    colour_x = &quot;blue&quot;,
+    colour_xend = &quot;green&quot;) + 
+  labs(title=&quot;Which Teams Have Improved or Declined in the Redzone?&quot;, subtitle=&quot;Chiefs, Vikings among those to see largest jump, while Jaguars and Broncos have dropped off&quot;, x = &quot;Total EPA&quot;, y = &quot;Team&quot;, caption=&quot;Source: nflreadr | By Jetson Ku&quot;) +
+  theme_minimal() +
+  theme(legend.position=&quot;top&quot;)</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/01/nfl-redzone-epa-reverse-engineering/index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+Miami has slightly improved in terms of total EPA. In order to fairly make comparisons here, I think we should be looking at EPA/play here. This is the argument he makes in the article: EPA/play should regress to the mean as time goes on. We’ll calculate this and make the same plot. Let’s see if it changes the narrative.</p>
+<pre class="r"><code>comp &lt;- comp %&gt;% mutate(start_epapp = start_total_epa/start_total_plays, overall_epapp = overall_total_epa/overall_total_plays)
+
+ggplot() + 
+  geom_dumbbell(
+    data=comp, 
+    aes(y=reorder(posteam, overall_epapp), x=overall_epapp, xend=start_epapp),
+    size = 1,
+    color = &quot;grey&quot;,
+    colour_x = &quot;blue&quot;,
+    colour_xend = &quot;green&quot;) + 
+  labs(title=&quot;Which Teams Have Improved or Declined in the Redzone?&quot;, subtitle=&quot;Jets, Vikings among those to see largest jump, while Dolphins and Lions have dropped off&quot;, x = &quot;EPA/Play&quot;, y = &quot;Team&quot;, caption=&quot;Source: nflreadr | By Jetson Ku&quot;) +
+  theme_minimal() +
+  theme(legend.position=&quot;top&quot;)</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/01/nfl-redzone-epa-reverse-engineering/index_files/figure-html/unnamed-chunk-8-1.png" width="672" />
+Yep. Miami’s EPA/play has gotten worse. In fact a good bit worse. On the other plot, we saw teams that started at the bottom get worse and teams that started at the top get better. In this plot it’s a little more of the inverse. teams that started at the bottom jumped up towards 0 and teams that started at the top cooled off a little bit. This provides some pretty good evidence that Hermsmayer is right.</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/sportsdatablog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/sportsdatablog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+
+    
+  </body>
+</html>
+
