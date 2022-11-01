@@ -253,17 +253,24 @@ ggplot() +
 ## increasing max.overlaps</code></pre>
 <p><img src="https://jetsonku.github.io/sportsdatablog/2022/10/25/maryland-football-ypp/index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
 Voila. So we see that Maryland’s good season so far is by no accident. The Terps have their highest Offensive Yards per Play since the start of this data. They also have one of the lowest Defensive Yards per Play of any other Maryland team. They are deservedly in the lower right quadrant of good teams. And we can see, based on the size of the bubbles, that teams in this quadrant tend to have higher win totals than teams in other quadrants. 2020-21 is an exception to this because COVID meant the season was shortened and the win total was lower as a result. We also see that there are some really good defensive teams this year. The large grain of salt in this analysis is that the season is not complete yet. A lot of teams have their hardest conference games in front of them (Maryland included). Just for fun though, let’s take a look at who has been lock down this season.</p>
-<pre class="r"><code>twentytwo %&gt;% filter(DefensiveYPP &lt; 4)</code></pre>
-<pre><code>## # A tibble: 4 × 9
-## # Groups:   Team [4]
-##   Team     Season  TotalPlays TotalYards Defen…¹ Defen…² Total…³ Offen…⁴ Defen…⁵
-##   &lt;chr&gt;    &lt;chr&gt;        &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
-## 1 Alabama  2022-23        405       3022     399    1505       6    7.46    3.77
-## 2 Illinois 2022-23        453       2440     367    1367       5    5.39    3.72
-## 3 Iowa     2022-23        350       1432     415    1590       3    4.09    3.83
-## 4 Michigan 2022-23        400       2752     383    1482       6    6.88    3.87
-## # … with abbreviated variable names ¹​DefensivePlays, ²​DefensiveYards,
-## #   ³​TotalWins, ⁴​OffensiveYPP, ⁵​DefensiveYPP</code></pre>
+<pre class="r"><code>ypp %&gt;% mutate(net = OffensiveYPP - DefensiveYPP) %&gt;% arrange(desc(net))</code></pre>
+<pre><code>## # A tibble: 1,531 × 10
+## # Groups:   Team [133]
+##    Team     Season Total…¹ Total…² Defen…³ Defen…⁴ Total…⁵ Offen…⁶ Defen…⁷   net
+##    &lt;chr&gt;    &lt;chr&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
+##  1 Alabama  2022-…     405    3022     399    1505       6    7.46    3.77  3.69
+##  2 Ohio St… 2022-…     404    3262     340    1521       6    8.07    4.47  3.60
+##  3 Florida… 2013-…     947    7267     963    3940      14    7.67    4.09  3.58
+##  4 Florida… 2012-…     941    6601     922    3558      12    7.01    3.86  3.16
+##  5 Alabama  2011-…     865    5585     720    2387      12    6.46    3.32  3.14
+##  6 Clemson  2018-…    1075    7920    1023    4372      15    7.37    4.27  3.09
+##  7 BYU      2020-…     795    6289     790    3810      11    7.91    4.82  3.09
+##  8 Alabama  2019-…     841    6642     875    4220      11    7.90    4.82  3.07
+##  9 Michigan 2022-…     400    2752     383    1482       6    6.88    3.87  3.01
+## 10 Oregon   2013-…     973    7345    1043    4811      11    7.55    4.61  2.94
+## # … with 1,521 more rows, and abbreviated variable names ¹​TotalPlays,
+## #   ²​TotalYards, ³​DefensivePlays, ⁴​DefensiveYards, ⁵​TotalWins, ⁶​OffensiveYPP,
+## #   ⁷​DefensiveYPP</code></pre>
 <p>’Bama and Michigan make sense. I’m sure Penn State and Ohio State just missed this cut as well. Illinois and Iowa are interesting additions though. We do see that their offense has been a bit disappointing, which holds them back from getting the same amount of wins. Devon Witherspoon can only do so much.</p>
 
     </div>
