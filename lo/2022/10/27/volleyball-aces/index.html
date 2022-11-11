@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.104.3" />
+
+
+<title>Volleyball Aces - Jetson&#39;s Sports Data Blog</title>
+<meta property="og:title" content="Volleyball Aces - Jetson&#39;s Sports Data Blog">
+
+
+  <link href='https://jetsonku.github.io/sportsdatablog/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/sportsdatablog/css/fonts.css" media="all">
+<link rel="stylesheet" href="/sportsdatablog/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/sportsdatablog/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/sportsdatablog/about/">About</a></li>
+    
+    <li><a href="https://github.com/jetsonku">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/jetsonku">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">6 min read</span>
+    
+
+    <h1 class="article-title">Volleyball Aces</h1>
+
+    
+    <span class="article-date">2022-10-27</span>
+    
+
+    <div class="article-content">
+      
+
+
+<p>With Maryland Volleyball’s season entering the home stretch, Sydney Dowler leads the team in aces by 8. How does she stack up against her teammates and other players in the NCAA?</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
+## ✔ ggplot2 3.3.6     ✔ purrr   0.3.4
+## ✔ tibble  3.1.8     ✔ dplyr   1.0.9
+## ✔ tidyr   1.2.0     ✔ stringr 1.4.1
+## ✔ readr   2.1.2     ✔ forcats 0.5.2
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(ggbeeswarm)
+library(ggrepel)
+set.seed(1234)
+
+twentytwo &lt;- read_csv(&quot;https://raw.githubusercontent.com/dwillis/NCAAWomensVolleyballData/main/data/ncaa_womens_volleyball_playerstats_2022.csv&quot;)</code></pre>
+<pre><code>## Rows: 5379 Columns: 32
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (7): team, full_name, roster_name, last_name, first_name, yr, pos
+## dbl (23): season, jersey, feet, inches, gp, gs, mp, s, kills, errors, total_...
+## lgl  (2): ms, total_blocks
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<p>We have data from the 2022 volleyball season so far, so we’re going to filter this data down and make a visualization. First, were only looking at players who have played in more than 20 games this season. They also need to have a position in our data so that we can compare positional data.</p>
+<pre class="r"><code>qualified &lt;- twentytwo %&gt;% filter(gp &gt;= 20) %&gt;% filter(!is.na(aces), !is.na(pos))
+qualified</code></pre>
+<pre><code>## # A tibble: 2,057 × 32
+##    team   season jersey full_…¹ roste…² last_…³ first…⁴ yr    pos    feet inches
+##    &lt;chr&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;
+##  1 A&amp;M-C…   2022     23 Zoria … Heard,… Heard   Zoria   Fr    L         5      6
+##  2 A&amp;M-C…   2022     12 Halle … Gibson… Gibson  Halle   Fr    S         5      9
+##  3 A&amp;M-C…   2022     33 Tayah … Little… Little  Tayah   Fr    MB        5      9
+##  4 A&amp;M-C…   2022      9 Kyndal… Payne,… Payne   Kyndal  So    OH        5     11
+##  5 A&amp;M-C…   2022      7 Leah S… Stolfu… Stolfus Leah    So    MB        6      0
+##  6 A&amp;M-C…   2022      5 Cariss… Barnes… Barnes  Carissa Sr    L         5      7
+##  7 A&amp;M-C…   2022     16 Ella L… Litter… Litter… Ella    Jr    OH        6      2
+##  8 A&amp;M-C…   2022      8 McKenn… Reiswi… Reiswig McKenna Jr    RS        6      4
+##  9 A&amp;M-C…   2022     15 Morgan… Baese,… Baese   Morgan  So    OPP       6      3
+## 10 A&amp;M-C…   2022      6 Faith … Panhan… Panhans Faith   Sr    S         5     11
+## # … with 2,047 more rows, 21 more variables: gp &lt;dbl&gt;, gs &lt;dbl&gt;, mp &lt;dbl&gt;,
+## #   s &lt;dbl&gt;, ms &lt;lgl&gt;, kills &lt;dbl&gt;, errors &lt;dbl&gt;, total_attacks &lt;dbl&gt;,
+## #   hit_pct &lt;dbl&gt;, assists &lt;dbl&gt;, aces &lt;dbl&gt;, s_err &lt;dbl&gt;, digs &lt;dbl&gt;,
+## #   r_err &lt;dbl&gt;, block_solos &lt;dbl&gt;, block_assists &lt;dbl&gt;, b_err &lt;dbl&gt;,
+## #   total_blocks &lt;lgl&gt;, pts &lt;dbl&gt;, bhe &lt;dbl&gt;, trpl_dbl &lt;dbl&gt;, and abbreviated
+## #   variable names ¹​full_name, ²​roster_name, ³​last_name, ⁴​first_name</code></pre>
+<p>We’re also only going to look at the top 25% in the country in aces/match. The idea is we are looking at those who play a lot and serve well.</p>
+<pre class="r"><code>qualified &lt;- qualified %&gt;% mutate(acespermatch = aces/gp)
+qualified</code></pre>
+<pre><code>## # A tibble: 2,057 × 33
+##    team   season jersey full_…¹ roste…² last_…³ first…⁴ yr    pos    feet inches
+##    &lt;chr&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;  &lt;dbl&gt;
+##  1 A&amp;M-C…   2022     23 Zoria … Heard,… Heard   Zoria   Fr    L         5      6
+##  2 A&amp;M-C…   2022     12 Halle … Gibson… Gibson  Halle   Fr    S         5      9
+##  3 A&amp;M-C…   2022     33 Tayah … Little… Little  Tayah   Fr    MB        5      9
+##  4 A&amp;M-C…   2022      9 Kyndal… Payne,… Payne   Kyndal  So    OH        5     11
+##  5 A&amp;M-C…   2022      7 Leah S… Stolfu… Stolfus Leah    So    MB        6      0
+##  6 A&amp;M-C…   2022      5 Cariss… Barnes… Barnes  Carissa Sr    L         5      7
+##  7 A&amp;M-C…   2022     16 Ella L… Litter… Litter… Ella    Jr    OH        6      2
+##  8 A&amp;M-C…   2022      8 McKenn… Reiswi… Reiswig McKenna Jr    RS        6      4
+##  9 A&amp;M-C…   2022     15 Morgan… Baese,… Baese   Morgan  So    OPP       6      3
+## 10 A&amp;M-C…   2022      6 Faith … Panhan… Panhans Faith   Sr    S         5     11
+## # … with 2,047 more rows, 22 more variables: gp &lt;dbl&gt;, gs &lt;dbl&gt;, mp &lt;dbl&gt;,
+## #   s &lt;dbl&gt;, ms &lt;lgl&gt;, kills &lt;dbl&gt;, errors &lt;dbl&gt;, total_attacks &lt;dbl&gt;,
+## #   hit_pct &lt;dbl&gt;, assists &lt;dbl&gt;, aces &lt;dbl&gt;, s_err &lt;dbl&gt;, digs &lt;dbl&gt;,
+## #   r_err &lt;dbl&gt;, block_solos &lt;dbl&gt;, block_assists &lt;dbl&gt;, b_err &lt;dbl&gt;,
+## #   total_blocks &lt;lgl&gt;, pts &lt;dbl&gt;, bhe &lt;dbl&gt;, trpl_dbl &lt;dbl&gt;,
+## #   acespermatch &lt;dbl&gt;, and abbreviated variable names ¹​full_name,
+## #   ²​roster_name, ³​last_name, ⁴​first_name</code></pre>
+<p>In order to get the top 25%, I’m looking at the 6 number summary of aces/match.</p>
+<pre class="r"><code>summary(qualified$acespermatch)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##  0.0000  0.1905  0.6000  0.6070  0.9091  3.1200</code></pre>
+<p>Since ~0.9 is the 3rd quartile, I’m going to make that my cutoff. Now I’m going to plot these on a beeswarm plot, which will show us the distribution of individual players’ aces/match at each position.</p>
+<pre class="r"><code>qualified &lt;- qualified %&gt;% filter(acespermatch &gt; 0.9)
+ggplot() + geom_beeswarm(data=qualified, aes(x=pos, y=acespermatch), color=&quot;grey&quot;)</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/10/27/volleyball-aces/index_files/figure-html/unnamed-chunk-5-1.png" width="672" />
+This doesn’t tell us anything about Maryland, so now I’m going to filter out Maryland’s data and plot them separately.</p>
+<pre class="r"><code>umd &lt;- qualified %&gt;% 
+  filter(team == &quot;Maryland Terrapins, Terps&quot;)
+
+ggplot() + 
+  geom_beeswarm(
+    data=qualified, 
+    groupOnX=TRUE, 
+    aes(x=pos, y=acespermatch), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=umd, 
+    groupOnX=TRUE, 
+    aes(x=pos, y=acespermatch), color=&quot;red&quot;)</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/10/27/volleyball-aces/index_files/figure-html/unnamed-chunk-6-1.png" width="672" />
+For finishing touches, I want to label each player and add a title, subtitle, and axis titles</p>
+<pre class="r"><code>ggplot() + 
+  geom_beeswarm(
+    data=qualified, 
+    groupOnX=TRUE, 
+    aes(x=pos, y=acespermatch), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=umd, 
+    groupOnX=TRUE, 
+    aes(x=pos, y=acespermatch), color=&quot;red&quot;) +
+  geom_text_repel(
+    data=umd, 
+    aes(x=pos, y=acespermatch, label=full_name)) + 
+  labs(title=&quot;Maryland&#39;s Service Has Been Good in 2022&quot;, x=&quot;Position&quot;, y=&quot;Aces/Match&quot;, subtitle=&quot;Sydney Dowler is the most prolific of the four Terps with &gt;0.9 aces per match&quot;, caption=&quot;Source: NCAA | By Jetson Ku&quot;)  + 
+  theme_minimal() +   
+  theme(
+    plot.title = element_text(size = 16, face = &quot;bold&quot;),
+    axis.title = element_text(size = 8), 
+    plot.subtitle = element_text(size=10), 
+    panel.grid.minor = element_blank()
+    )</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/10/27/volleyball-aces/index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+What this plot tells me is that Sydney is definitely one of the best in the NCAA at producing aces in each match. Laila and Milan are slightly above the pack in this universe of above average servers. Erin Engel is more towards the clump of the distribution for setters. However, if we take into account that again, this is the 25th percentile of aces/match, Maryland can be pretty satisfied with its numbers here. They have one of the best in the country at the setter position, and some solid supporting characters. It would make sense to lean on Dowler down the stretch, but they shouldn’t see a worrying drop in aces if they don’t</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/sportsdatablog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/sportsdatablog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.104.3" />
+
+
+<title>CFB Recruiting Ratings &amp; Wins - Jetson&#39;s Sports Data Blog</title>
+<meta property="og:title" content="CFB Recruiting Ratings &amp; Wins - Jetson&#39;s Sports Data Blog">
+
+
+  <link href='https://jetsonku.github.io/sportsdatablog/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/sportsdatablog/css/fonts.css" media="all">
+<link rel="stylesheet" href="/sportsdatablog/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/sportsdatablog/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/sportsdatablog/about/">About</a></li>
+    
+    <li><a href="https://github.com/jetsonku">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/jetsonku">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">9 min read</span>
+    
+
+    <h1 class="article-title">CFB Recruiting Ratings &amp; Wins</h1>
+
+    
+    <span class="article-date">2022-10-20</span>
+    
+
+    <div class="article-content">
+      
+
+
+<p>Today we’re analyzing recruiting rankings and seeing if they have any impact on winning in college football. Our intuition says… maybe? Let’s find out.</p>
+<p>We’ll load in tidyverse and our datasets with the team records by year and recruiting rankings.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
+## ✔ ggplot2 3.3.6     ✔ purrr   0.3.4
+## ✔ tibble  3.1.8     ✔ dplyr   1.0.9
+## ✔ tidyr   1.2.0     ✔ stringr 1.4.1
+## ✔ readr   2.1.2     ✔ forcats 0.5.2
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>records &lt;- read_csv(&#39;https://dwillis.github.io/sports-data-files/all_teams.csv&#39;)</code></pre>
+<pre><code>## Rows: 904 Columns: 21
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (3): team, conference, division
+## dbl (18): year, expected_wins, total_games, total_wins, total_losses, total_...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>ratings &lt;- read_csv(&#39;https://dwillis.github.io/sports-data-files/all_rankings.csv&#39;)</code></pre>
+<pre><code>## Rows: 400 Columns: 3
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr (1): team
+## dbl (2): rating, year
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<p>I join the records and rating dataframes on the team and year columns so that we can plot each year’s recruiting rankings with their win total from that year. To do this we left join on the records dataframe since it has more rows. Let’s sort by descending year and make sure we have the teams we expect at the top.</p>
+<pre class="r"><code>records_ratings &lt;- left_join(records, ratings, by=c(&#39;team&#39;,&#39;year&#39;))
+records_ratings %&gt;% arrange(desc(rating))</code></pre>
+<pre><code>## # A tibble: 904 × 22
+##     year team    confe…¹ divis…² expec…³ total…⁴ total…⁵ total…⁶ total…⁷ confe…⁸
+##    &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+##  1  2021 Alabama SEC     West       11        15      13       2       0       9
+##  2  2017 Alabama SEC     West       12.8      14      13       1       0       9
+##  3  2018 Georgia SEC     East       11.6      14      11       3       0       9
+##  4  2021 Ohio S… Big Ten East        9.9      13      11       2       0       9
+##  5  2019 Alabama SEC     West       11.4      13      11       2       0       8
+##  6  2018 Ohio S… Big Ten East       10.3      14      13       1       0      10
+##  7  2020 Georgia SEC     East        7.5      10       8       2       0       9
+##  8  2017 Ohio S… Big Ten East       11.5      14      12       2       0      10
+##  9  2015 Alabama SEC     West       12.5      15      14       1       0       9
+## 10  2015 USC     Pac-12  South       8.3      14       8       6       0      10
+## # … with 894 more rows, 12 more variables: conference_wins &lt;dbl&gt;,
+## #   conference_losses &lt;dbl&gt;, conference_ties &lt;dbl&gt;, home_games &lt;dbl&gt;,
+## #   home_wins &lt;dbl&gt;, home_losses &lt;dbl&gt;, home_ties &lt;dbl&gt;, away_games &lt;dbl&gt;,
+## #   away_wins &lt;dbl&gt;, away_losses &lt;dbl&gt;, away_ties &lt;dbl&gt;, rating &lt;dbl&gt;, and
+## #   abbreviated variable names ¹​conference, ²​division, ³​expected_wins,
+## #   ⁴​total_games, ⁵​total_wins, ⁶​total_losses, ⁷​total_ties, ⁸​conference_games</code></pre>
+<p>Yep. Bama, Bama, Bama, Ohio St., Bama…</p>
+<p>Let’s plot these up both with wins and expected wins.</p>
+<pre class="r"><code>ggplot() + geom_point(data=records_ratings, aes(x=rating, y=total_wins))</code></pre>
+<pre><code>## Warning: Removed 554 rows containing missing values (geom_point).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/10/20/cfb-recruiting-ratings-wins/index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>ggplot() + geom_point(data=records_ratings, aes(x=rating, y=expected_wins))</code></pre>
+<pre><code>## Warning: Removed 554 rows containing missing values (geom_point).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/10/20/cfb-recruiting-ratings-wins/index_files/figure-html/unnamed-chunk-4-2.png" width="672" />
+These pretty much show the same relationship, which isn’t surprising. Expected wins looks a little more natural of a dataset given that they don’t have to be whole numbers.</p>
+<p>Let’s give it a regression line.</p>
+<pre class="r"><code>ggplot() + 
+  geom_point(data=records_ratings, aes(x=rating, y=total_wins)) +
+  geom_smooth(data=records_ratings, aes(x=rating, y=total_wins), method=&quot;lm&quot;)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## Warning: Removed 554 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 554 rows containing missing values (geom_point).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/10/20/cfb-recruiting-ratings-wins/index_files/figure-html/unnamed-chunk-5-1.png" width="672" />
+A positive relationship makes sense. Where is Maryland on this plot? Probably towards the lower left…</p>
+<pre class="r"><code>md &lt;- records_ratings %&gt;% filter(team == &quot;Maryland&quot;)
+ggplot() + 
+  geom_point(data=records_ratings, aes(x=rating, y=total_wins)) +
+  geom_smooth(data=records_ratings, aes(x=rating, y=total_wins), method=&quot;lm&quot;) +
+  geom_point(data=md, aes(x=rating, y=total_wins), colour = &quot;red&quot;, size = 3)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## Warning: Removed 554 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 554 rows containing missing values (geom_point).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/10/20/cfb-recruiting-ratings-wins/index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>This is telling us that Maryland has underperformed its recruiting classes rankings by the model’s standards. This data does include the COVID data, which makes it unfair to compare some of the wins totals. What if we look at winning percentage?</p>
+<pre class="r"><code>cov_adj &lt;- records_ratings %&gt;% mutate(win_pct = total_wins/total_games)
+cov_adj</code></pre>
+<pre><code>## # A tibble: 904 × 23
+##     year team    confe…¹ divis…² expec…³ total…⁴ total…⁵ total…⁶ total…⁷ confe…⁸
+##    &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+##  1  2021 Air Fo… Mounta… Mounta…     9.1      13      10       3       0       8
+##  2  2021 Akron   Mid-Am… East        1.9      12       2      10       0       8
+##  3  2021 Alabama SEC     West       11        15      13       2       0       9
+##  4  2021 Appala… Sun Be… West       11.3      14      10       4       0       9
+##  5  2021 Arizona Pac-12  South       1.9      12       1      11       0       9
+##  6  2021 Arizon… Pac-12  South       9.2      13       8       5       0       9
+##  7  2021 Arkans… SEC     West        9.2      13       9       4       0       8
+##  8  2021 Arkans… Sun Be… East        2.9      12       2      10       0       8
+##  9  2021 Army    FBS In… &lt;NA&gt;       10        13       9       4       0       0
+## 10  2021 Auburn  SEC     West        6.3      13       6       7       0       8
+## # … with 894 more rows, 13 more variables: conference_wins &lt;dbl&gt;,
+## #   conference_losses &lt;dbl&gt;, conference_ties &lt;dbl&gt;, home_games &lt;dbl&gt;,
+## #   home_wins &lt;dbl&gt;, home_losses &lt;dbl&gt;, home_ties &lt;dbl&gt;, away_games &lt;dbl&gt;,
+## #   away_wins &lt;dbl&gt;, away_losses &lt;dbl&gt;, away_ties &lt;dbl&gt;, rating &lt;dbl&gt;,
+## #   win_pct &lt;dbl&gt;, and abbreviated variable names ¹​conference, ²​division,
+## #   ³​expected_wins, ⁴​total_games, ⁵​total_wins, ⁶​total_losses, ⁷​total_ties,
+## #   ⁸​conference_games</code></pre>
+<p>And plot that data?</p>
+<pre class="r"><code>md &lt;- cov_adj %&gt;% filter(team == &quot;Maryland&quot;)
+ggplot() + 
+  geom_point(data=cov_adj, aes(x=rating, y=win_pct)) +
+  geom_smooth(data=cov_adj, aes(x=rating, y=win_pct), method=&quot;lm&quot;) +
+  geom_point(data=md, aes(x=rating, y=win_pct), colour = &quot;red&quot;, size = 3)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## Warning: Removed 554 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 554 rows containing missing values (geom_point).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/10/20/cfb-recruiting-ratings-wins/index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre class="r"><code>fit &lt;- lm(win_pct ~ rating, data = cov_adj)
+summary(fit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = win_pct ~ rating, data = cov_adj)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.44285 -0.13330  0.00352  0.14336  0.41256 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 0.1327082  0.0613748   2.162   0.0313 *  
+## rating      0.0020104  0.0002632   7.637 2.16e-13 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1829 on 348 degrees of freedom
+##   (554 observations deleted due to missingness)
+## Multiple R-squared:  0.1436, Adjusted R-squared:  0.1411 
+## F-statistic: 58.33 on 1 and 348 DF,  p-value: 2.164e-13</code></pre>
+<p>Our r-squared is not that big. The p-value is low, but this relationship isn’t very robust in terms of being able to predict win percentages.</p>
+<p>The plot looks a bit different. Let’s look at the results when we analyze a class and its impact three years on. For this, we’ll add three years to the recruiting class year to get an impact year - the year when they are expected to be most impactful to the team.</p>
+<pre class="r"><code>impact_ratings &lt;- ratings %&gt;% mutate(impact_year = year + 3)
+records &lt;- records %&gt;% mutate(impact_year = year)
+impact_record_ratings &lt;- left_join(records, impact_ratings, by=c(&#39;team&#39;,&#39;impact_year&#39;))</code></pre>
+<pre class="r"><code>cov_adj &lt;- impact_record_ratings %&gt;% mutate(win_pct = total_wins/total_games)
+cov_adj</code></pre>
+<pre><code>## # A tibble: 904 × 25
+##    year.x team   confe…¹ divis…² expec…³ total…⁴ total…⁵ total…⁶ total…⁷ confe…⁸
+##     &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+##  1   2021 Air F… Mounta… Mounta…     9.1      13      10       3       0       8
+##  2   2021 Akron  Mid-Am… East        1.9      12       2      10       0       8
+##  3   2021 Alaba… SEC     West       11        15      13       2       0       9
+##  4   2021 Appal… Sun Be… West       11.3      14      10       4       0       9
+##  5   2021 Arizo… Pac-12  South       1.9      12       1      11       0       9
+##  6   2021 Arizo… Pac-12  South       9.2      13       8       5       0       9
+##  7   2021 Arkan… SEC     West        9.2      13       9       4       0       8
+##  8   2021 Arkan… Sun Be… East        2.9      12       2      10       0       8
+##  9   2021 Army   FBS In… &lt;NA&gt;       10        13       9       4       0       0
+## 10   2021 Auburn SEC     West        6.3      13       6       7       0       8
+## # … with 894 more rows, 15 more variables: conference_wins &lt;dbl&gt;,
+## #   conference_losses &lt;dbl&gt;, conference_ties &lt;dbl&gt;, home_games &lt;dbl&gt;,
+## #   home_wins &lt;dbl&gt;, home_losses &lt;dbl&gt;, home_ties &lt;dbl&gt;, away_games &lt;dbl&gt;,
+## #   away_wins &lt;dbl&gt;, away_losses &lt;dbl&gt;, away_ties &lt;dbl&gt;, impact_year &lt;dbl&gt;,
+## #   rating &lt;dbl&gt;, year.y &lt;dbl&gt;, win_pct &lt;dbl&gt;, and abbreviated variable names
+## #   ¹​conference, ²​division, ³​expected_wins, ⁴​total_games, ⁵​total_wins,
+## #   ⁶​total_losses, ⁷​total_ties, ⁸​conference_games</code></pre>
+<pre class="r"><code>md &lt;- cov_adj %&gt;% filter(team == &quot;Maryland&quot;)
+ggplot() + 
+  geom_point(data=cov_adj, aes(x=rating, y=win_pct)) +
+  geom_smooth(data=cov_adj, aes(x=rating, y=win_pct), method=&quot;lm&quot;) +
+  geom_point(data=md, aes(x=rating, y=win_pct), colour = &quot;red&quot;, size = 3)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<pre><code>## Warning: Removed 704 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 704 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 3 rows containing missing values (geom_point).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/10/20/cfb-recruiting-ratings-wins/index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<pre class="r"><code>fit &lt;- lm(win_pct ~ rating, data = cov_adj)
+summary(fit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = win_pct ~ rating, data = cov_adj)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.49503 -0.15253  0.02169  0.15989  0.42098 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 0.1495569  0.0877688   1.704     0.09 .  
+## rating      0.0018586  0.0003784   4.911 1.89e-06 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.1995 on 198 degrees of freedom
+##   (704 observations deleted due to missingness)
+## Multiple R-squared:  0.1086, Adjusted R-squared:  0.1041 
+## F-statistic: 24.12 on 1 and 198 DF,  p-value: 1.889e-06</code></pre>
+<p>The r-squared got lower. However there seems to be less noise on the edges and less clustering around the regression line. It’s more of a random distribution, but I would argue that the relationship is more defined.
+So here we have less data because we need the rankings from the row’s year - 3, so not all rows in records have rows in ratings that meet that requirement. It does make more sense that a recruiting class would have a bigger impact on its team’s winning percentage 3 years after they get to campus rather than after walking the stage at high school graduation.
+Once we made these adjustments for COVID and the nature of player development, we can see that recruiting class can be somewhat predictive of how good a team can become.</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/sportsdatablog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/sportsdatablog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+
+    
+  </body>
+</html>
+

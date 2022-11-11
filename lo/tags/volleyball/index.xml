@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Volleyball on Jetson&#39;s Sports Data Blog</title>
+    <link>https://jetsonku.github.io/sportsdatablog/tags/volleyball/</link>
+    <description>Recent content in Volleyball on Jetson&#39;s Sports Data Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 27 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/tags/volleyball/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Volleyball Aces</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2022/10/27/volleyball-aces/</link>
+      <pubDate>Thu, 27 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2022/10/27/volleyball-aces/</guid>
+      <description>With Maryland Volleyball’s season entering the home stretch, Sydney Dowler leads the team in aces by 8. How does she stack up against her teammates and other players in the NCAA?
+library(tidyverse)## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──## ✔ ggplot2 3.3.6 ✔ purrr 0.3.4## ✔ tibble 3.1.8 ✔ dplyr 1.0.9## ✔ tidyr 1.2.0 ✔ stringr 1.4.1## ✔ readr 2.1.2 ✔ forcats 0.5.2## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──## ✖ dplyr::filter() masks stats::filter()## ✖ dplyr::lag() masks stats::lag()library(ggbeeswarm)library(ggrepel)set.</description>
+    </item>
+    
+    <item>
+      <title>Volleyball Waffle Chart</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2022/10/13/volleyball-waffle-chart/</link>
+      <pubDate>Thu, 13 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2022/10/13/volleyball-waffle-chart/</guid>
+      <description>First we will load in our data from the GitHub URL.
+library(tidyverse)## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──## ✔ ggplot2 3.3.6 ✔ purrr 0.3.4## ✔ tibble 3.1.8 ✔ dplyr 1.0.9## ✔ tidyr 1.2.0 ✔ stringr 1.4.1## ✔ readr 2.1.2 ✔ forcats 0.5.2## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──## ✖ dplyr::filter() masks stats::filter()## ✖ dplyr::lag() masks stats::lag()logs &amp;lt;- read_csv(&amp;#39;https://raw.githubusercontent.com/dwillis/NCAAWomensVolleyballData/main/data/ncaa_womens_volleyball_matchstats_2022.csv&amp;#39;)## Rows: 6077 Columns: 36## ── Column specification ────────────────────────────────────────────────────────## Delimiter: &amp;quot;,&amp;quot;## chr (3): team, opponent, home_away## dbl (31): team_score, opponent_score, s, kills, errors, total_attacks, hit_.</description>
+    </item>
+    
+  </channel>
+</rss>
