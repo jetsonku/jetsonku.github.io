@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>R Markdown on Jetson&#39;s Sports Data Blog</title>
+    <link>https://jetsonku.github.io/sportsdatablog/tags/r-markdown/</link>
+    <description>Recent content in R Markdown on Jetson&#39;s Sports Data Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 01 Nov 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/tags/r-markdown/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>NFL Redzone EPA Reverse Engineering</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2022/11/01/nfl-redzone-epa-reverse-engineering/</link>
+      <pubDate>Tue, 01 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2022/11/01/nfl-redzone-epa-reverse-engineering/</guid>
+      <description>This blog post is a spin off of Josh Hermsmeyer of 538’s article on teams in red zones. We want to look at the data to assess his theory that teams’ EPA will regress to the mean over the course of a season.
+We’ll start by loading in play by play data for the 2022 season so far using nflreadr.
+library(nflreadr)library(tidyverse)## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──## ✔ ggplot2 3.</description>
+    </item>
+    
+    <item>
+      <title>Volleyball Aces</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2022/10/27/volleyball-aces/</link>
+      <pubDate>Thu, 27 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2022/10/27/volleyball-aces/</guid>
+      <description>With Maryland Volleyball’s season entering the home stretch, Sydney Dowler leads the team in aces by 8. How does she stack up against her teammates and other players in the NCAA?
+library(tidyverse)## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──## ✔ ggplot2 3.3.6 ✔ purrr 0.3.4## ✔ tibble 3.1.8 ✔ dplyr 1.0.9## ✔ tidyr 1.2.0 ✔ stringr 1.4.1## ✔ readr 2.1.2 ✔ forcats 0.5.2## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──## ✖ dplyr::filter() masks stats::filter()## ✖ dplyr::lag() masks stats::lag()library(ggbeeswarm)library(ggrepel)set.</description>
+    </item>
+    
+    <item>
+      <title>Maryland Football YPP</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2022/10/25/maryland-football-ypp/</link>
+      <pubDate>Tue, 25 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2022/10/25/maryland-football-ypp/</guid>
+      <description>With 8 games complete in the 2022 college football season, we already have (or should have) a decent handle on where our favorite teams stand in the NCAA D1 universe. Texas A&amp;amp;M is not who many thought they were, while Syracuse and Kansas are among the teams that have exceeded expectations thus far. Today we’ll be looking at two measures of a team’s efficiency: Offensive/Defensive Yards per Play, and how they relate to a team’s wins that season.</description>
+    </item>
+    
+    <item>
+      <title>CFB Recruiting Ratings &amp; Wins</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2022/10/20/cfb-recruiting-ratings-wins/</link>
+      <pubDate>Thu, 20 Oct 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2022/10/20/cfb-recruiting-ratings-wins/</guid>
+      <description>Today we’re analyzing recruiting rankings and seeing if they have any impact on winning in college football. Our intuition says… maybe? Let’s find out.
+We’ll load in tidyverse and our datasets with the team records by year and recruiting rankings.
+library(tidyverse)## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──## ✔ ggplot2 3.3.6 ✔ purrr 0.3.4## ✔ tibble 3.1.8 ✔ dplyr 1.0.9## ✔ tidyr 1.2.0 ✔ stringr 1.</description>
+    </item>
+    
+    <item>
+      <title>Hello R Markdown</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2020/12/01/hello-r-markdown/</link>
+      <pubDate>Tue, 01 Dec 2020 21:13:14 -0500</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2020/12/01/hello-r-markdown/</guid>
+      <description>R MarkdownThis is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
+You can embed an R code chunk like this:
+summary(cars)## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
+    </item>
+    
+  </channel>
+</rss>
