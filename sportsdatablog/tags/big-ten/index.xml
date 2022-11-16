@@ -6,7 +6,17 @@
     <description>Recent content in Big Ten on Jetson&#39;s Sports Data Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 25 Oct 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/tags/big-ten/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 15 Nov 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/tags/big-ten/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>What Defines a Kevin Willard Team?</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/</link>
+      <pubDate>Tue, 15 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/</guid>
+      <description>The Kevin Willard Era has started in College Park. After a long awaited changing of the guard for the Terrapins, what can fans expect from the new head coach during his time at Xfinity? Today we are looking at game logs from NCAA Basketball games since 2011-12.
+library(tidyverse)library(ggbeeswarm)library(ggrepel)logs &amp;lt;- read_csv(&amp;quot;https://dwillis.github.io/sports-data-files/logs1222.csv&amp;quot;)logs## # A tibble: 122,275 × 48## Season Game Date TeamF…¹ Oppon…² HomeA…³ W_L TeamS…⁴ Oppon…⁵ TeamFG## &amp;lt;chr&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;date&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;## 1 2011-2… 1 2011-11-11 Air Fo… Army &amp;lt;NA&amp;gt; W 87 71 29## 2 2011-2… 2 2011-11-12 Air Fo… VMI N W 75 65 28## 3 2011-2… 3 2011-11-18 Air Fo… Wester… &amp;lt;NA&amp;gt; W 65 37 24## 4 2011-2… 4 2011-11-23 Air Fo… Colora… &amp;lt;NA&amp;gt; L (1… 73 76 25## 5 2011-2… 5 2011-12-03 Air Fo… Drake @ L 60 62 16## 6 2011-2… 6 2011-12-07 Air Fo… Wright… &amp;lt;NA&amp;gt; W 55 34 19## 7 2011-2… 7 2011-12-10 Air Fo… Arkans… &amp;lt;NA&amp;gt; W 63 51 24## 8 2011-2… 8 2011-12-17 Air Fo… Maryla… &amp;lt;NA&amp;gt; W 64 60 22## 9 2011-2… 9 2011-12-22 Air Fo… Gonzaga @ L 60 70 22## 10 2011-2… 10 2011-12-29 Air Fo… Wagner N L 61 72 18## # … with 122,265 more rows, 38 more variables: TeamFGA &amp;lt;dbl&amp;gt;, TeamFGPCT &amp;lt;dbl&amp;gt;,## # Team3P &amp;lt;dbl&amp;gt;, Team3PA &amp;lt;dbl&amp;gt;, Team3PPCT &amp;lt;dbl&amp;gt;, TeamFT &amp;lt;dbl&amp;gt;, TeamFTA &amp;lt;dbl&amp;gt;,## # TeamFTPCT &amp;lt;dbl&amp;gt;, TeamOffRebounds &amp;lt;dbl&amp;gt;, TeamTotalRebounds &amp;lt;dbl&amp;gt;,## # TeamAssists &amp;lt;dbl&amp;gt;, TeamSteals &amp;lt;dbl&amp;gt;, TeamBlocks &amp;lt;dbl&amp;gt;, TeamTurnovers &amp;lt;dbl&amp;gt;,## # TeamPersonalFouls &amp;lt;dbl&amp;gt;, OpponentFG &amp;lt;dbl&amp;gt;, OpponentFGA &amp;lt;dbl&amp;gt;,## # OpponentFGPCT &amp;lt;dbl&amp;gt;, Opponent3P &amp;lt;dbl&amp;gt;, Opponent3PA &amp;lt;dbl&amp;gt;,## # Opponent3PPCT &amp;lt;dbl&amp;gt;, OpponentFT &amp;lt;dbl&amp;gt;, OpponentFTA &amp;lt;dbl&amp;gt;, …I want to make some beeswarm plots on some key metrics that can help us understand the coach’s profile and evolution over time.</description>
+    </item>
+    
     <item>
       <title>Maryland Football YPP</title>
       <link>https://jetsonku.github.io/sportsdatablog/2022/10/25/maryland-football-ypp/</link>
