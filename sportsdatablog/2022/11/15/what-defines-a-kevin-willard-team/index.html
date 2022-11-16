@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.104.3" />
+
+
+<title>What Defines a Kevin Willard Team? - Jetson&#39;s Sports Data Blog</title>
+<meta property="og:title" content="What Defines a Kevin Willard Team? - Jetson&#39;s Sports Data Blog">
+
+
+  <link href='https://jetsonku.github.io/sportsdatablog/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/sportsdatablog/css/fonts.css" media="all">
+<link rel="stylesheet" href="/sportsdatablog/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/sportsdatablog/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/sportsdatablog/about/">About</a></li>
+    
+    <li><a href="https://github.com/jetsonku">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/jetsonku">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">32 min read</span>
+    
+
+    <h1 class="article-title">What Defines a Kevin Willard Team?</h1>
+
+    
+    <span class="article-date">2022-11-15</span>
+    
+
+    <div class="article-content">
+      
+
+
+<p>The Kevin Willard Era has started in College Park. After a long awaited changing of the guard for the Terrapins, what can fans expect from the new head coach during his time at Xfinity? Today we are looking at game logs from NCAA Basketball games since 2011-12.</p>
+<pre class="r"><code>library(tidyverse)
+library(ggbeeswarm)
+library(ggrepel)
+logs &lt;- read_csv(&quot;https://dwillis.github.io/sports-data-files/logs1222.csv&quot;)
+logs</code></pre>
+<pre><code>## # A tibble: 122,275 × 48
+##    Season   Game Date       TeamF…¹ Oppon…² HomeA…³ W_L   TeamS…⁴ Oppon…⁵ TeamFG
+##    &lt;chr&gt;   &lt;dbl&gt; &lt;date&gt;     &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+##  1 2011-2…     1 2011-11-11 Air Fo… Army    &lt;NA&gt;    W          87      71     29
+##  2 2011-2…     2 2011-11-12 Air Fo… VMI     N       W          75      65     28
+##  3 2011-2…     3 2011-11-18 Air Fo… Wester… &lt;NA&gt;    W          65      37     24
+##  4 2011-2…     4 2011-11-23 Air Fo… Colora… &lt;NA&gt;    L (1…      73      76     25
+##  5 2011-2…     5 2011-12-03 Air Fo… Drake   @       L          60      62     16
+##  6 2011-2…     6 2011-12-07 Air Fo… Wright… &lt;NA&gt;    W          55      34     19
+##  7 2011-2…     7 2011-12-10 Air Fo… Arkans… &lt;NA&gt;    W          63      51     24
+##  8 2011-2…     8 2011-12-17 Air Fo… Maryla… &lt;NA&gt;    W          64      60     22
+##  9 2011-2…     9 2011-12-22 Air Fo… Gonzaga @       L          60      70     22
+## 10 2011-2…    10 2011-12-29 Air Fo… Wagner  N       L          61      72     18
+## # … with 122,265 more rows, 38 more variables: TeamFGA &lt;dbl&gt;, TeamFGPCT &lt;dbl&gt;,
+## #   Team3P &lt;dbl&gt;, Team3PA &lt;dbl&gt;, Team3PPCT &lt;dbl&gt;, TeamFT &lt;dbl&gt;, TeamFTA &lt;dbl&gt;,
+## #   TeamFTPCT &lt;dbl&gt;, TeamOffRebounds &lt;dbl&gt;, TeamTotalRebounds &lt;dbl&gt;,
+## #   TeamAssists &lt;dbl&gt;, TeamSteals &lt;dbl&gt;, TeamBlocks &lt;dbl&gt;, TeamTurnovers &lt;dbl&gt;,
+## #   TeamPersonalFouls &lt;dbl&gt;, OpponentFG &lt;dbl&gt;, OpponentFGA &lt;dbl&gt;,
+## #   OpponentFGPCT &lt;dbl&gt;, Opponent3P &lt;dbl&gt;, Opponent3PA &lt;dbl&gt;,
+## #   Opponent3PPCT &lt;dbl&gt;, OpponentFT &lt;dbl&gt;, OpponentFTA &lt;dbl&gt;, …</code></pre>
+<p>I want to make some beeswarm plots on some key metrics that can help us understand the coach’s profile and evolution over time. I’m choosing FG and 3P attempted, as they will tell us how many shots a coach likes to get and possibly about which kind of shots. I also chose the percentages for both, which can show what a coach is emphasizing in practice, recruiting, and player development. I also am choosing assists as they can speak to a team’s ball movement and offensive dynamic. I also put in fouls drawn, since more fouls are likely to be called for teams that drive to the basket. In terms of defense, we have personal fouls and turnovers forced. The last stat is an important one - rebound differential. Some coachs really emphasize the importance of outrebounding the opponent. I’m grouping by season and opponent, which will give us the numbers for each team in each season. Then I averaged these stats for each team throughout the season per game.</p>
+<pre class="r"><code>set.seed(1234)
+logs &lt;- logs %&gt;% mutate(ReboundDiff = OpponentTotalRebounds-TeamTotalRebounds)
+season_avg &lt;- logs %&gt;% group_by(Season, Opponent) %&gt;% summarise(games = n(), TeamFGA_avg = mean(OpponentFGA), TeamFGPCT_avg = mean(OpponentFGPCT), Team3PA_avg = mean(Opponent3PA), Team3PPCT_avg = mean(Opponent3PPCT), TeamAssists_avg = mean(OpponentAssists), TeamTurnovers_avg = mean(OpponentTurnovers), TeamPersonalFouls_avg = mean(OpponentPersonalFouls), OppTurnovers_avg = mean(TeamTurnovers), OppPersonalFouls_avg = mean(TeamPersonalFouls), ReboundDiff_avg = mean(ReboundDiff))
+season_avg &lt;- season_avg %&gt;% filter(games &gt; 10)
+seton_avg &lt;- season_avg %&gt;% filter(Opponent == &quot;Seton Hall&quot;)
+umd_avg &lt;- season_avg %&gt;% filter(Opponent == &quot;Maryland&quot;)</code></pre>
+<pre class="r"><code>ggplot() + 
+  geom_beeswarm(
+    data=season_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamFGA_avg), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=seton_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamFGA_avg), color=&quot;blue&quot;) + 
+  geom_beeswarm(
+    data=umd_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamFGA_avg), color=&quot;red&quot;) +
+  labs(title = &quot;FG Attempted In the Past Ten Seasons&quot;) +
+  scale_x_discrete(labels = c(&quot;2011-12&quot;, &quot;2012-13&quot;, &quot;2013-14&quot;, &quot;2014-15&quot;, &quot;2015-16&quot;, &quot;2016-17&quot;, &quot;2017-18&quot;, &quot;2018-19&quot;, &quot;2019-20&quot;, &quot;2020-21&quot;, &quot;2021-22&quot;))</code></pre>
+<pre><code>## Warning: Removed 17 rows containing missing values (position_beeswarm).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-3-1.png" width="672" />
+My first plot is FG attempted. Turgeon’s Maryland teams are in red, while Willard’s Seton Hall teams are in blue. Turgeon is a little all over the place, but has never really had his teams shoot a lot of shots. We know that he likes a slow-paced and pragmatic offense. Seton Hall had a trend for about six years where they shot progressively more but that has seemed to tail off. Last season they shot above average attempts.</p>
+<pre class="r"><code>ggplot() + 
+  geom_beeswarm(
+    data=season_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamFGPCT_avg), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=seton_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamFGPCT_avg), color=&quot;blue&quot;) + 
+  geom_beeswarm(
+    data=umd_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamFGPCT_avg), color=&quot;red&quot;) +
+  labs(title = &quot;FG Percentage In the Past Ten Seasons&quot;) +
+  scale_x_discrete(labels = c(&quot;2011-12&quot;, &quot;2012-13&quot;, &quot;2013-14&quot;, &quot;2014-15&quot;, &quot;2015-16&quot;, &quot;2016-17&quot;, &quot;2017-18&quot;, &quot;2018-19&quot;, &quot;2019-20&quot;, &quot;2020-21&quot;, &quot;2021-22&quot;))</code></pre>
+<pre><code>## Warning: Removed 17 rows containing missing values (position_beeswarm).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+And how well did they shoot? Seton Hall last year didn’t make a good number of their increased attempts. It doesn’t seem to be a real emphasis for either coach. If anything, Turgeon’s teams shot slightly better than Willard’s.</p>
+<pre class="r"><code>ggplot() + 
+  geom_beeswarm(
+    data=season_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=Team3PA_avg), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=seton_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=Team3PA_avg), color=&quot;blue&quot;) + 
+  geom_beeswarm(
+    data=umd_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=Team3PA_avg), color=&quot;red&quot;) +
+  labs(title = &quot;3P Attempted In the Past Ten Seasons&quot;) +
+  scale_x_discrete(labels = c(&quot;2011-12&quot;, &quot;2012-13&quot;, &quot;2013-14&quot;, &quot;2014-15&quot;, &quot;2015-16&quot;, &quot;2016-17&quot;, &quot;2017-18&quot;, &quot;2018-19&quot;, &quot;2019-20&quot;, &quot;2020-21&quot;, &quot;2021-22&quot;))</code></pre>
+<pre><code>## Warning: Removed 17 rows containing missing values (position_beeswarm).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-5-1.png" width="672" />
+What about threes? Maryland evolved their offense to shoot more and more over Turgeon’s tenure. It does seem that there is a nation-wide trend upwards, especially since the success of Golden State in the NBA. Willard seemed to hop on that train as well, but has regressed a little more towards the middle of the pack.</p>
+<pre class="r"><code>ggplot() + 
+  geom_beeswarm(
+    data=season_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=Team3PPCT_avg), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=seton_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=Team3PPCT_avg), color=&quot;blue&quot;) + 
+  geom_beeswarm(
+    data=umd_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=Team3PPCT_avg), color=&quot;red&quot;) +
+  labs(title = &quot;3P Percentage In the Past Ten Seasons&quot;) +
+  scale_x_discrete(labels = c(&quot;2011-12&quot;, &quot;2012-13&quot;, &quot;2013-14&quot;, &quot;2014-15&quot;, &quot;2015-16&quot;, &quot;2016-17&quot;, &quot;2017-18&quot;, &quot;2018-19&quot;, &quot;2019-20&quot;, &quot;2020-21&quot;, &quot;2021-22&quot;))</code></pre>
+<pre><code>## Warning: Removed 17 rows containing missing values (position_beeswarm).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-6-1.png" width="672" />
+Willard’s teams have been actually shooting worse. It could be argued that increased number of looks means that 3PFG% will be down because teams are looking to shoot them more, not just when it’s an open shot. Turgeon’s teams have usually been decent three point shooters.</p>
+<pre class="r"><code>ggplot() + 
+  geom_beeswarm(
+    data=season_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamAssists_avg), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=seton_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamAssists_avg), color=&quot;blue&quot;) + 
+  geom_beeswarm(
+    data=umd_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamAssists_avg), color=&quot;red&quot;) +
+  labs(title = &quot;Assists In the Past Ten Seasons&quot;) +
+  scale_x_discrete(labels = c(&quot;2011-12&quot;, &quot;2012-13&quot;, &quot;2013-14&quot;, &quot;2014-15&quot;, &quot;2015-16&quot;, &quot;2016-17&quot;, &quot;2017-18&quot;, &quot;2018-19&quot;, &quot;2019-20&quot;, &quot;2020-21&quot;, &quot;2021-22&quot;))</code></pre>
+<pre><code>## Warning: Removed 17 rows containing missing values (position_beeswarm).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+This one is also kind of all over the place. Seton Hall didn’t have very many assists last year.</p>
+<pre class="r"><code>ggplot() + 
+  geom_beeswarm(
+    data=season_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamTurnovers_avg), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=seton_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamTurnovers_avg), color=&quot;blue&quot;) + 
+  geom_beeswarm(
+    data=umd_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamTurnovers_avg), color=&quot;red&quot;) +
+  labs(title = &quot;Turnovers In the Past Ten Seasons&quot;) +
+  scale_x_discrete(labels = c(&quot;2011-12&quot;, &quot;2012-13&quot;, &quot;2013-14&quot;, &quot;2014-15&quot;, &quot;2015-16&quot;, &quot;2016-17&quot;, &quot;2017-18&quot;, &quot;2018-19&quot;, &quot;2019-20&quot;, &quot;2020-21&quot;, &quot;2021-22&quot;))</code></pre>
+<pre><code>## Warning: Removed 17 rows containing missing values (position_beeswarm).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-8-1.png" width="672" />
+Turgeon hated turnovers, and it appears Willard is similar, but maybe not so strict about it. Considering they take more shots and look for more total possessions, I would say they turn the ball over at roughly the same rate.</p>
+<pre class="r"><code>ggplot() + 
+  geom_beeswarm(
+    data=season_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamPersonalFouls_avg), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=seton_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamPersonalFouls_avg), color=&quot;blue&quot;) + 
+  geom_beeswarm(
+    data=umd_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=TeamPersonalFouls_avg), color=&quot;red&quot;) +
+  labs(title = &quot;Fouls In the Past Ten Seasons&quot;) +
+  scale_x_discrete(labels = c(&quot;2011-12&quot;, &quot;2012-13&quot;, &quot;2013-14&quot;, &quot;2014-15&quot;, &quot;2015-16&quot;, &quot;2016-17&quot;, &quot;2017-18&quot;, &quot;2018-19&quot;, &quot;2019-20&quot;, &quot;2020-21&quot;, &quot;2021-22&quot;))</code></pre>
+<pre><code>## Warning: Removed 17 rows containing missing values (position_beeswarm).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+Turgeon’s teams really didn’t foul at all. Seton Hall was actually pretty similar to Maryland last year. This looks like another stat that shows Willard becoming like Turgeon.</p>
+<pre class="r"><code>ggplot() + 
+  geom_beeswarm(
+    data=season_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=OppTurnovers_avg), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=seton_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=OppTurnovers_avg), color=&quot;blue&quot;) + 
+  geom_beeswarm(
+    data=umd_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=OppTurnovers_avg), color=&quot;red&quot;) +
+  labs(title = &quot;Turnovers Forced In the Past Ten Seasons&quot;) +
+  scale_x_discrete(labels = c(&quot;2011-12&quot;, &quot;2012-13&quot;, &quot;2013-14&quot;, &quot;2014-15&quot;, &quot;2015-16&quot;, &quot;2016-17&quot;, &quot;2017-18&quot;, &quot;2018-19&quot;, &quot;2019-20&quot;, &quot;2020-21&quot;, &quot;2021-22&quot;))</code></pre>
+<pre><code>## Warning: Removed 17 rows containing missing values (position_beeswarm).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+Seton Hall did force more turnovers as well, so the turnover differential for each team is likely similar. It seems that Willard is ok with a mistake every now and then, as long as his players make up for it by forcing the other team into mistakes.</p>
+<pre class="r"><code>ggplot() + 
+  geom_beeswarm(
+    data=season_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=OppPersonalFouls_avg), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=seton_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=OppPersonalFouls_avg), color=&quot;blue&quot;) + 
+  geom_beeswarm(
+    data=umd_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=OppPersonalFouls_avg), color=&quot;red&quot;) +
+  labs(title = &quot;Fouls Drawn In the Past Ten Seasons&quot;) +
+  scale_x_discrete(labels = c(&quot;2011-12&quot;, &quot;2012-13&quot;, &quot;2013-14&quot;, &quot;2014-15&quot;, &quot;2015-16&quot;, &quot;2016-17&quot;, &quot;2017-18&quot;, &quot;2018-19&quot;, &quot;2019-20&quot;, &quot;2020-21&quot;, &quot;2021-22&quot;))</code></pre>
+<pre><code>## Warning: Removed 17 rows containing missing values (position_beeswarm).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-11-1.png" width="672" />
+It doesn’t seem that his teams are going to the paint and drawing fouls all that much. He seems to be steering away from it, which is not something Turgeon did. This means that he relies on midrange, three point, or clean looks.</p>
+<pre class="r"><code>ggplot() + 
+  geom_beeswarm(
+    data=season_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=ReboundDiff_avg), color=&quot;grey&quot;) + 
+  geom_beeswarm(
+    data=seton_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=ReboundDiff_avg), color=&quot;blue&quot;) + 
+  geom_beeswarm(
+    data=umd_avg, 
+    groupOnX=TRUE, 
+    aes(x=Season, y=ReboundDiff_avg), color=&quot;red&quot;) +
+  labs(title = &quot;Rebound Differential In the Past Ten Seasons&quot;) +
+  scale_x_discrete(labels = c(&quot;2011-12&quot;, &quot;2012-13&quot;, &quot;2013-14&quot;, &quot;2014-15&quot;, &quot;2015-16&quot;, &quot;2016-17&quot;, &quot;2017-18&quot;, &quot;2018-19&quot;, &quot;2019-20&quot;, &quot;2020-21&quot;, &quot;2021-22&quot;))</code></pre>
+<pre><code>## Warning: Removed 17 rows containing missing values (position_beeswarm).</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-12-1.png" width="672" />
+Maryland has had some good rebounding teams (Bruno and Stix), and when they have the personnel, Turgeon makes sure it’s a priority. Seton Hall has never outrebounded opponents quite like those Maryland teams, but it could definitely be worse. Perhaps Willard is ok with giving up rebounds to get numbers on fastbreaks.</p>
+<pre class="r"><code>library(cluster)
+
+teamsselected &lt;- season_avg %&gt;% ungroup() %&gt;%
+  select(Season, Opponent, TeamFGA_avg, Team3PA_avg, TeamAssists_avg, OppTurnovers_avg, ReboundDiff_avg) %&gt;%
+  na.omit()
+teamsscaled &lt;- teamsselected %&gt;%
+  select(TeamFGA_avg, Team3PA_avg, TeamAssists_avg, OppTurnovers_avg, ReboundDiff_avg) %&gt;%
+  na.omit() %&gt;%
+  mutate_all(scale) %&gt;%
+  na.omit()</code></pre>
+<p>So if anything, these graphs showed us that Willard is not the anti-Turgeon some Maryland fans may have been hoping for. His offense seems to be a little faster paced, which makes his teams vulnerable to rebounding teams or teams that force turnovers, but he expects his players to also force turnovers and grab rebounds when needed. Some of the biggest knocks on Mark were that his offense ran the clock down and then just panicked and threw a shot up. Willard seems to take more shots, which might appease some of those critics. He has claimed that his team will rely on defense and 3 pointers. Defense makes some sense given what we’ve seen in these graphs (low fouls, decent takeaways), but unless he continues his ride on the 3 point bandwagon, there isn’t much to suggest that this team will be carried to the Final Four on three pointers.</p>
+<p>Lastly, I want to cluster these teams by these stats and see where some of these Maryland and Seton Hall seasons lie.</p>
+<pre class="r"><code>wss &lt;- function(k) {
+  kmeans(na.omit(teamsscaled), k, nstart = 10 )$tot.withinss
+}
+
+# Compute and plot wss for k = 1 to k = 15
+k.values &lt;- 1:15
+
+# extract wss for 2-15 clusters
+wss_values &lt;- map_dbl(k.values, wss)</code></pre>
+<pre><code>## Warning: Quick-TRANSfer stage steps exceeded maximum (= 192000)</code></pre>
+<pre><code>## Warning: did not converge in 10 iterations
+
+## Warning: did not converge in 10 iterations
+
+## Warning: did not converge in 10 iterations
+
+## Warning: did not converge in 10 iterations</code></pre>
+<pre class="r"><code>plot(k.values, wss_values,
+       type=&quot;b&quot;, pch = 19, frame = FALSE,
+       xlab=&quot;Number of clusters K&quot;,
+       ylab=&quot;Total within-clusters sum of squares&quot;)</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
+I’m going to use 6 clusters.</p>
+<pre class="r"><code>k6 &lt;- kmeans(teamsscaled, centers = 6, nstart = 25)</code></pre>
+<pre><code>## Warning: did not converge in 10 iterations</code></pre>
+<pre class="r"><code>k6</code></pre>
+<pre><code>## K-means clustering with 6 clusters of sizes 782, 651, 416, 584, 626, 781
+## 
+## Cluster means:
+##   TeamFGA_avg Team3PA_avg TeamAssists_avg OppTurnovers_avg ReboundDiff_avg
+## 1  -0.7661213 -0.79143817     -0.36295129       -0.6328109       0.5658320
+## 2   0.3881655  0.02867648      0.94156582       -0.4356016       1.1099132
+## 3   1.3050161  1.39378623      1.04308781        0.4188951      -0.3197334
+## 4  -0.9510346 -0.63113761     -1.00450533        0.1744678      -0.9247274
+## 5   0.3393909 -0.30813807      0.08465198        1.3143951      -0.1371299
+## 6   0.1875415  0.74507040     -0.29374776       -0.4104048      -0.5200268
+## 
+## Clustering vector:
+##    [1] 4 5 1 4 5 1 4 1 1 1 1 5 4 4 5 5 5 1 2 3 4 4 6 4 1 5 4 6 6 1 2 1 5 1 5 2 5
+##   [38] 2 1 6 5 5 4 5 5 6 4 5 5 5 1 1 6 1 1 1 3 5 2 4 2 2 4 4 4 3 5 4 1 6 5 5 4 4
+##   [75] 4 5 6 5 5 5 4 2 5 5 5 4 5 5 4 1 1 1 1 1 4 4 5 1 1 4 1 5 4 1 2 6 5 1 1 5 4
+##  [112] 1 4 1 1 1 1 3 5 2 4 4 5 4 6 2 4 5 4 5 1 5 6 5 5 1 5 4 5 5 3 1 4 5 5 1 1 4
+##  [149] 5 5 5 4 5 2 1 4 4 5 1 6 4 6 2 5 4 1 2 5 5 1 5 5 5 4 4 4 5 4 2 4 1 4 2 2 5
+##  [186] 4 6 1 5 4 4 1 4 5 4 4 1 1 4 6 5 1 6 5 2 5 4 5 1 6 1 2 5 4 4 1 1 2 1 1 5 1
+##  [223] 1 1 6 1 2 4 2 5 4 6 5 5 1 5 4 5 2 4 6 4 1 5 6 6 5 3 5 1 4 4 1 4 4 6 2 1 1
+##  [260] 4 4 5 5 1 1 5 4 1 4 5 1 3 1 5 5 2 1 5 5 5 4 1 4 4 5 4 4 4 1 3 4 1 1 4 3 4
+##  [297] 1 1 1 2 1 3 4 2 5 5 1 3 4 5 4 5 4 1 1 1 5 1 1 5 1 2 1 1 3 5 4 2 1 6 2 5 4
+##  [334] 5 1 2 4 4 1 1 4 4 1 1 6 6 2 4 4 4 1 4 1 4 2 2 5 5 5 2 4 4 1 2 5 5 4 1 1 5
+##  [371] 4 5 1 2 1 1 1 2 1 5 5 5 1 5 6 3 5 6 6 1 1 5 2 1 4 1 1 1 1 1 1 5 4 2 4 1 1
+##  [408] 1 4 5 5 5 6 1 5 6 3 4 5 4 6 6 4 5 1 4 2 5 1 5 5 4 1 4 4 5 5 1 1 1 4 4 1 2
+##  [445] 4 1 5 4 4 2 5 4 1 2 4 4 1 4 6 5 2 4 3 2 3 4 4 5 4 4 2 4 2 4 5 1 5 6 1 5 1
+##  [482] 1 5 2 4 5 5 4 5 5 1 1 4 5 1 4 4 1 2 2 4 4 2 4 1 4 2 1 5 4 2 4 5 2 4 5 4 5
+##  [519] 5 5 5 6 4 1 4 4 4 1 1 4 5 4 5 5 4 4 4 1 6 1 4 5 1 4 4 4 6 5 2 5 5 1 1 5 5
+##  [556] 5 4 1 5 2 1 4 1 1 2 1 1 5 4 1 2 1 1 2 5 4 4 4 4 5 1 1 6 4 5 2 5 4 4 1 4 4
+##  [593] 5 4 2 1 1 4 1 5 5 4 4 1 4 2 4 4 4 5 1 5 5 5 1 4 5 1 2 1 5 4 3 1 5 4 1 4 1
+##  [630] 4 6 5 4 1 5 1 6 1 1 5 1 2 1 1 5 4 2 4 2 5 3 5 5 1 2 1 2 4 5 1 1 1 4 4 1 1
+##  [667] 5 1 1 1 6 3 5 4 1 1 1 5 5 1 1 1 2 1 4 2 4 4 4 1 1 6 4 6 1 4 4 5 1 4 1 4 2
+##  [704] 6 5 4 6 3 4 5 1 2 5 4 4 1 1 5 1 4 2 6 1 2 1 2 1 1 4 1 2 6 6 5 5 6 6 2 6 5
+##  [741] 1 1 1 1 1 1 1 1 1 6 6 2 1 6 1 6 4 4 4 5 1 1 2 2 6 1 5 4 6 6 6 1 1 4 1 5 1
+##  [778] 1 1 1 6 6 4 5 1 1 1 1 4 6 1 1 4 1 1 5 4 1 2 1 1 1 1 4 4 1 1 1 6 5 1 1 3 2
+##  [815] 3 4 1 5 4 4 2 4 2 4 6 1 1 4 4 1 1 3 1 6 6 4 2 1 3 5 1 4 5 2 6 5 4 2 6 1 4
+##  [852] 6 2 2 1 4 1 2 1 6 1 4 6 1 1 5 4 4 5 5 6 1 4 1 4 6 4 2 1 4 5 4 4 1 4 5 5 1
+##  [889] 1 4 1 1 1 4 6 6 4 5 2 3 2 1 3 5 1 3 5 1 5 1 1 4 1 1 2 2 4 4 4 6 2 2 1 2 1
+##  [926] 1 6 4 4 6 6 1 6 6 5 1 5 4 1 1 2 6 6 4 2 1 1 5 1 6 1 1 1 1 1 2 4 1 1 1 4 5
+##  [963] 1 5 1 1 1 5 4 1 1 4 6 1 4 1 2 4 4 1 1 1 1 1 2 1 1 4 5 2 4 1 4 2 2 1 1 1 2
+## [1000] 4 5 2 1 1 4 2 1 2 5 6 1 2 1 1 1 1 1 5 1 2 1 1 3 1 1 2 4 1 6 5 1 1 1 2 6 4
+## [1037] 1 1 4 4 1 1 6 4 1 6 4 1 2 1 4 4 1 1 1 5 4 4 3 4 4 6 2 6 4 4 1 4 1 1 4 1 6
+## [1074] 1 5 1 2 1 1 1 1 1 4 5 4 1 6 6 2 1 4 1 1 1 1 1 4 1 2 1 3 4 6 1 3 4 1 6 4 6
+## [1111] 5 4 4 2 2 4 4 5 4 6 4 6 1 4 4 1 4 4 2 4 1 1 4 4 3 1 1 1 1 6 5 1 2 4 4 1 5
+## [1148] 6 1 5 1 3 4 6 1 4 2 4 6 1 4 2 4 3 2 2 4 5 4 4 1 1 4 1 4 1 2 4 1 1 1 4 6 5
+## [1185] 6 4 4 2 1 5 5 1 1 1 2 4 5 4 5 6 1 1 6 2 1 1 4 6 2 1 1 5 1 4 4 1 4 6 6 5 5
+## [1222] 6 2 1 1 4 1 1 1 1 4 1 4 6 1 4 1 4 1 6 4 1 2 1 1 1 6 1 3 2 2 6 2 5 4 2 2 5
+## [1259] 4 2 4 1 1 1 1 2 2 4 5 4 4 1 2 1 2 1 1 6 4 1 4 4 1 2 4 4 2 2 5 4 1 1 4 4 4
+## [1296] 1 6 5 4 1 1 1 4 1 1 4 1 4 4 4 4 4 1 2 4 1 4 1 5 4 1 5 1 6 4 4 1 1 4 1 4 4
+## [1333] 4 4 1 1 1 4 1 1 5 1 1 1 6 2 1 2 4 1 4 4 2 6 1 4 1 5 2 1 5 1 4 4 1 5 1 1 5
+## [1370] 1 2 1 4 3 5 2 1 6 1 5 5 4 2 1 2 6 6 1 1 4 1 2 1 6 4 5 3 6 6 6 1 4 4 6 2 6
+## [1407] 5 4 6 3 6 1 2 2 3 6 4 5 6 6 1 4 6 6 2 6 2 3 6 5 1 5 2 4 3 2 1 6 6 3 2 6 2
+## [1444] 6 4 1 6 5 2 2 2 6 6 2 5 3 2 1 4 4 1 2 1 4 6 3 6 6 5 5 6 3 6 2 3 5 2 4 6 2
+## [1481] 1 2 5 5 1 6 1 2 2 1 6 4 2 2 4 2 5 2 6 2 2 5 2 6 2 1 4 1 6 6 6 6 2 6 3 3 3
+## [1518] 4 5 6 6 6 2 1 5 4 1 2 6 6 5 2 6 3 5 5 3 1 2 2 5 2 4 1 3 2 3 5 6 5 3 1 1 6
+## [1555] 2 2 1 4 3 2 5 3 6 3 5 1 1 5 1 3 5 5 5 1 1 2 1 5 1 2 2 5 1 4 3 6 4 1 5 1 3
+## [1592] 4 6 6 4 5 4 6 2 3 1 3 2 1 3 1 2 3 5 1 5 5 6 6 6 1 2 3 5 4 4 3 3 2 3 2 6 1
+## [1629] 6 3 1 5 4 6 5 1 4 2 3 5 6 1 6 6 6 4 1 2 2 1 2 6 5 1 5 1 1 5 5 4 5 6 4 6 6
+## [1666] 5 2 1 4 5 6 2 6 4 6 3 5 6 6 6 2 5 2 1 1 3 2 1 6 6 5 2 4 2 6 1 2 2 2 1 6 3
+## [1703] 4 2 5 6 5 3 2 2 6 3 2 2 3 5 6 2 2 5 1 2 1 1 6 2 2 3 1 1 5 5 1 2 1 5 2 6 1
+## [1740] 1 5 6 2 2 3 5 6 6 1 4 6 1 6 4 6 1 3 5 4 1 3 3 4 3 2 3 3 6 6 2 3 5 4 5 3 2
+## [1777] 2 5 2 6 5 5 5 1 4 3 6 4 3 6 6 5 6 2 5 5 6 6 4 2 1 3 4 6 3 1 3 5 1 6 2 4 5
+## [1814] 6 3 2 6 1 3 6 5 6 6 5 1 3 6 5 4 6 2 1 2 5 5 2 5 1 2 2 1 6 5 1 2 5 5 5 5 6
+## [1851] 2 5 1 6 4 5 2 4 2 4 2 2 6 2 6 3 3 3 3 6 6 1 1 2 5 5 2 2 2 6 6 5 2 4 3 1 1
+## [1888] 5 4 5 6 2 2 5 4 5 6 6 5 6 3 3 6 6 4 2 1 1 4 6 2 2 6 2 5 5 6 2 3 6 3 2 5 4
+## [1925] 3 5 2 5 2 1 1 2 5 6 3 6 1 1 2 5 6 6 6 6 2 6 5 4 2 2 5 3 3 3 1 5 3 2 5 3 6
+## [1962] 2 4 1 3 5 1 2 4 3 4 4 6 5 2 3 3 1 2 3 3 2 5 1 1 5 5 1 2 5 2 6 6 3 5 6 3 3
+## [1999] 2 2 4 2 5 5 6 5 6 4 5 5 1 4 6 6 5 6 3 1 1 5 5 6 6 3 2 3 5 5 5 4 3 2 5 6 1
+## [2036] 1 3 2 1 6 6 1 2 5 1 4 1 3 1 6 2 3 3 3 2 5 2 3 6 2 2 2 3 2 2 3 1 1 2 6 5 1
+## [2073] 2 1 6 6 1 2 2 6 6 5 4 6 1 2 2 2 3 2 3 2 3 2 2 3 5 6 6 1 4 6 1 6 6 6 2 3 5
+## [2110] 4 6 3 3 5 2 2 3 3 6 2 2 5 6 1 5 3 2 3 3 2 6 1 1 4 5 6 3 3 1 3 5 4 6 4 2 2
+## [2147] 6 2 6 6 2 6 3 6 3 3 6 3 2 1 4 2 3 3 6 6 2 6 6 6 6 5 6 3 2 4 3 5 3 4 6 2 5
+## [2184] 3 6 1 3 6 6 1 2 1 6 6 1 2 5 3 3 6 2 5 4 2 4 2 3 6 2 6 5 3 4 2 6 3 2 6 5 6
+## [2221] 5 2 6 3 6 5 5 6 1 6 6 5 3 1 3 4 6 5 4 2 6 6 5 1 1 5 3 6 5 6 3 3 1 6 6 1 2
+## [2258] 6 6 6 2 2 6 2 2 5 2 2 1 5 6 5 6 2 1 3 6 3 6 3 2 5 6 5 5 5 2 2 5 6 3 2 2 4
+## [2295] 6 4 1 2 6 4 2 3 3 2 3 3 2 3 6 2 3 2 1 3 2 1 6 4 3 5 6 6 5 2 3 6 6 5 6 6 5
+## [2332] 5 5 4 2 6 1 2 5 3 6 2 6 1 6 3 6 2 1 6 5 6 5 5 5 6 1 6 5 1 5 6 6 5 6 5 3 6
+## [2369] 2 5 3 5 1 2 6 2 4 5 6 5 2 4 6 1 5 3 2 1 6 2 6 2 5 1 4 1 2 6 2 2 2 5 3 2 2
+## [2406] 3 2 2 3 3 6 3 6 6 2 4 3 4 6 3 1 3 1 3 6 2 2 5 3 6 3 5 4 1 5 2 2 6 1 6 5 3
+## [2443] 2 3 3 5 6 6 6 4 4 6 4 1 6 5 2 3 4 6 3 3 5 1 2 3 5 6 6 6 2 2 1 5 6 3 3 6 3
+## [2480] 6 5 1 3 4 6 3 3 6 6 3 3 4 6 4 2 1 3 2 2 1 2 6 3 6 6 3 6 6 2 6 6 1 2 6 2 2
+## [2517] 3 3 5 3 3 4 3 6 2 6 6 5 6 4 6 6 3 2 6 3 3 6 1 4 2 1 5 6 1 2 1 2 3 3 6 1 2
+## [2554] 1 6 5 2 5 5 6 6 5 6 4 2 4 6 2 2 2 4 5 5 1 2 4 5 4 3 2 6 6 2 2 6 3 5 6 5 6
+## [2591] 3 3 6 2 1 5 1 5 6 4 6 2 3 2 4 1 3 6 6 6 2 2 1 6 2 2 4 1 4 4 2 3 6 5 6 2 2
+## [2628] 3 6 3 6 3 2 5 6 3 4 5 6 5 2 6 6 3 6 6 6 6 1 6 2 6 4 6 3 2 2 6 6 2 3 6 2 5
+## [2665] 2 4 3 6 3 5 4 2 5 3 6 2 2 3 6 2 5 6 6 5 5 2 5 2 6 2 1 3 2 2 2 2 6 1 3 1 5
+## [2702] 6 5 6 6 5 4 6 2 5 6 1 4 1 3 6 1 6 3 6 1 2 4 3 2 5 2 3 2 5 4 6 5 6 1 3 2 5
+## [2739] 3 2 1 6 6 6 1 4 2 6 1 2 5 1 3 2 3 5 3 4 5 2 2 3 6 3 6 2 2 1 4 3 1 6 5 1 3
+## [2776] 2 2 3 6 6 5 3 6 3 6 6 1 6 2 2 3 6 3 2 4 2 2 3 5 6 6 3 4 4 6 6 5 4 2 5 5 4
+## [2813] 1 2 3 5 6 5 3 5 6 6 6 2 6 2 6 6 6 3 1 3 4 1 4 6 4 2 6 5 3 4 5 6 4 6 4 2 6
+## [2850] 4 2 3 6 2 2 6 6 6 3 1 6 2 6 6 4 5 6 2 2 2 3 5 5 5 4 3 6 5 6 1 6 1 5 6 6 3
+## [2887] 5 4 6 3 6 1 6 2 3 5 3 1 2 4 1 3 6 6 2 6 1 6 6 2 6 6 1 1 2 6 4 1 1 6 2 3 6
+## [2924] 5 1 2 6 2 4 5 4 3 1 6 6 5 1 1 6 1 3 4 6 6 1 5 2 5 2 1 2 6 5 4 2 3 2 6 2 5
+## [2961] 2 5 6 6 2 2 6 3 2 1 3 5 2 5 5 1 6 1 6 2 1 3 3 2 2 5 2 5 4 5 4 5 4 5 5 6 6
+## [2998] 3 1 6 6 6 6 2 3 6 6 3 6 6 2 6 5 1 5 6 3 2 1 1 3 3 3 5 4 5 5 1 6 5 2 6 6 2
+## [3035] 5 3 3 2 3 2 1 2 5 2 1 5 6 6 2 6 3 5 6 3 2 6 2 4 5 1 1 2 4 4 5 5 4 1 1 2 6
+## [3072] 3 6 5 5 5 1 6 3 2 6 1 2 3 6 5 4 1 5 5 5 3 2 1 3 5 5 1 4 2 1 5 1 5 1 2 6 5
+## [3109] 6 2 5 3 4 2 2 6 6 3 2 2 6 6 3 3 6 5 2 3 1 3 3 6 1 6 5 4 5 2 6 4 6 3 1 3 6
+## [3146] 6 3 4 2 2 2 5 4 3 3 6 4 4 5 6 2 5 3 4 1 6 3 5 3 3 5 3 6 6 2 6 6 3 2 3 6 2
+## [3183] 6 2 4 2 6 6 6 2 4 3 4 2 5 6 6 1 6 3 6 5 2 2 6 2 6 3 3 2 1 1 3 4 5 3 2 2 3
+## [3220] 6 5 6 3 6 2 6 6 6 1 6 5 5 2 3 3 2 4 1 3 6 3 1 2 5 5 3 5 2 5 2 6 6 6 6 1 6
+## [3257] 6 2 3 4 1 2 6 4 1 4 2 3 6 3 5 4 2 5 2 4 6 4 2 2 6 3 5 1 2 4 1 3 6 4 2 6 2
+## [3294] 1 2 2 1 3 5 1 1 3 6 2 2 2 4 1 6 2 2 6 3 3 1 6 6 2 5 4 4 1 3 1 2 5 5 6 2 6
+## [3331] 5 6 5 4 3 4 5 6 5 4 6 1 6 1 6 4 6 1 6 6 6 6 6 3 3 2 3 5 1 5 4 3 3 2 5 3 3
+## [3368] 2 4 5 5 4 2 2 6 6 1 1 3 5 1 3 2 4 6 5 2 1 3 3 6 5 3 6 1 3 6 1 4 2 6 3 4 2
+## [3405] 2 1 2 5 5 4 1 2 2 5 3 3 5 4 5 6 1 3 4 1 1 5 5 6 2 5 5 4 5 1 5 3 3 1 6 4 5
+## [3442] 5 5 1 2 3 6 2 2 2 6 3 1 1 2 6 3 6 6 2 6 5 3 5 2 5 2 6 3 6 6 5 2 3 1 2 6 5
+## [3479] 6 6 2 5 5 6 6 2 6 6 6 2 6 3 2 3 3 6 5 4 1 3 4 4 4 1 1 6 2 3 5 4 2 6 3 6 6
+## [3516] 3 6 3 4 6 1 1 1 3 2 6 6 2 6 2 1 1 4 4 1 2 6 6 4 3 6 6 6 2 6 2 2 2 2 3 2 6
+## [3553] 6 6 3 2 6 2 1 6 4 6 6 6 6 6 2 6 3 4 3 6 2 6 6 6 6 6 4 2 3 6 5 6 1 3 6 6 6
+## [3590] 6 6 4 5 6 2 4 4 6 6 1 6 3 4 5 5 6 6 2 6 6 2 6 2 3 5 4 1 1 2 5 2 4 6 6 6 2
+## [3627] 6 3 6 6 6 4 3 5 2 2 6 6 6 2 5 4 5 6 4 6 3 3 6 5 6 2 6 5 3 2 2 6 1 6 1 5 1
+## [3664] 6 1 4 1 2 5 2 1 6 6 2 1 6 5 6 3 4 1 6 6 5 6 1 6 1 1 6 6 4 6 2 3 3 6 6 3 1
+## [3701] 6 5 1 6 6 6 6 6 4 6 1 3 1 6 5 5 3 2 2 3 3 6 1 6 6 2 1 2 4 6 2 2 6 6 1 1 3
+## [3738] 6 2 3 6 4 5 6 4 5 5 1 2 1 3 3 1 1 6 2 6 3 6 1 6 2 5 6 6 3 4 2 1 3 5 2 5 6
+## [3775] 5 5 1 1 5 3 2 2 2 6 4 5 4 1 1 6 3 2 2 1 3 3 6 6 2 6 1 6 6 2 6 6 5 6 2 6 1
+## [3812] 6 6 6 6 5 2 6 1 2 3 2 5 6 4 5 6 3 5 6 6 6 6 6 6 2 1 2 6 6
+## 
+## Within cluster sum of squares by cluster:
+## [1] 1825.659 1667.310 1429.894 1521.889 1732.791 1748.339
+##  (between_SS / total_SS =  48.3 %)
+## 
+## Available components:
+## 
+## [1] &quot;cluster&quot;      &quot;centers&quot;      &quot;totss&quot;        &quot;withinss&quot;     &quot;tot.withinss&quot;
+## [6] &quot;betweenss&quot;    &quot;size&quot;         &quot;iter&quot;         &quot;ifault&quot;</code></pre>
+<p>Let’s look at Seton Hall.</p>
+<pre class="r"><code>teamcluster &lt;- data.frame(teamsselected, k6$cluster)
+sh &lt;- teamcluster %&gt;% filter(Opponent == &quot;Seton Hall&quot;)
+sh</code></pre>
+<pre><code>##       Season   Opponent TeamFGA_avg Team3PA_avg TeamAssists_avg
+## 1  2011-2012 Seton Hall    56.26471    19.64706        14.00000
+## 2  2012-2013 Seton Hall    51.63636    21.54545        13.96970
+## 3  2013-2014 Seton Hall    52.85294    20.70588        13.29412
+## 4  2014-2015 Seton Hall    56.29032    19.64516        12.38710
+## 5  2015-2016 Seton Hall    58.79412    17.47059        13.38235
+## 6  2016-2017 Seton Hall    59.06061    18.12121        12.27273
+## 7  2017-2018 Seton Hall    60.97059    20.14706        15.50000
+## 8  2018-2019 Seton Hall    59.44118    21.79412        13.50000
+## 9  2019-2020 Seton Hall    58.46667    23.70000        14.56667
+## 10 2020-2021 Seton Hall    56.48148    20.77778        12.85185
+## 11 2021-2022 Seton Hall    60.16129    21.48387        10.00000
+##    OppTurnovers_avg ReboundDiff_avg k6.cluster
+## 1          14.14706       1.5294118          5
+## 2          12.27273       0.3030303          1
+## 3          12.08824      -0.8235294          1
+## 4          11.67742      -0.4193548          6
+## 5          13.47059       4.7352941          2
+## 6          11.84848       6.5757576          2
+## 7          12.32353       4.7058824          2
+## 8          13.44118       0.5294118          5
+## 9          13.20000       0.9333333          3
+## 10         12.25926       1.2592593          6
+## 11         11.93548       2.6774194          6</code></pre>
+<p>Willard has been a little all over, going into 5/6 clusters.</p>
+<pre class="r"><code>md &lt;- teamcluster %&gt;% filter(Opponent == &quot;Maryland&quot;)
+md</code></pre>
+<pre><code>##       Season Opponent TeamFGA_avg Team3PA_avg TeamAssists_avg OppTurnovers_avg
+## 1  2011-2012 Maryland    54.59375    15.93750        10.59375        10.750000
+## 2  2012-2013 Maryland    55.89474    17.00000        14.50000        10.368421
+## 3  2013-2014 Maryland    57.62500    20.62500        11.68750        12.593750
+## 4  2014-2015 Maryland    50.77143    19.62857        10.74286        10.885714
+## 5  2015-2016 Maryland    54.11429    20.74286        13.51429        10.371429
+## 6  2016-2017 Maryland    55.56250    22.81250        14.18750        11.968750
+## 7  2017-2018 Maryland    53.06452    19.12903        14.00000        10.548387
+## 8  2018-2019 Maryland    56.14706    20.79412        13.14706         9.088235
+## 9  2019-2020 Maryland    57.22581    24.67742        13.19355        11.096774
+## 10 2020-2021 Maryland    52.76667    22.73333        12.93333        10.433333
+## 11 2021-2022 Maryland    57.00000    21.18750        11.62500        10.562500
+##    ReboundDiff_avg k6.cluster
+## 1         1.843750          1
+## 2         9.236842          2
+## 3         3.375000          1
+## 4         1.685714          1
+## 5         2.714286          1
+## 6        -0.687500          6
+## 7         4.580645          1
+## 8         7.852941          2
+## 9         4.225806          2
+## 10       -2.166667          6
+## 11        1.093750          6</code></pre>
+<p>Turgeon was a little more confined at first, but expanded a little. He is mostly in cluster 1/2. Let’s also look at the National Champs from each year and what cluster they were in just for fun.</p>
+<pre class="r"><code>champs &lt;- teamcluster %&gt;% 
+  filter((Opponent == &quot;Kansas&quot; &amp; Season == &quot;2021-2022&quot;) |
+           (Opponent == &quot;Baylor&quot; &amp; Season == &quot;2020-2021&quot;) | 
+           (Opponent == &quot;Virginia&quot; &amp; Season == &quot;2018-2019&quot;) | 
+           (Opponent == &quot;Villanova&quot; &amp; Season == &quot;2017-2018&quot;) | 
+           (Opponent == &quot;UNC&quot; &amp; Season == &quot;2016-2017&quot;) | 
+           (Opponent == &quot;Villanova&quot; &amp; Season == &quot;2015-2016&quot;) | 
+           (Opponent == &quot;Duke&quot; &amp; Season == &quot;2014-2015&quot;) | 
+           (Opponent == &quot;UConn&quot; &amp; Season == &quot;2013-2014&quot;) | 
+           (Opponent == &quot;Louisville&quot; &amp; Season == &quot;2012-2013&quot;) | 
+           (Opponent == &quot;Kentucky&quot; &amp; Season == &quot;2011-2012&quot;))
+champs</code></pre>
+<pre><code>##       Season   Opponent TeamFGA_avg Team3PA_avg TeamAssists_avg
+## 1  2011-2012   Kentucky    56.20000    14.87500        13.27500
+## 2  2012-2013 Louisville    57.50000    17.27500        14.60000
+## 3  2013-2014      UConn    54.07500    18.52500        12.20000
+## 4  2014-2015       Duke    56.17949    18.76923        15.07692
+## 5  2015-2016  Villanova    56.17500    23.97500        15.92500
+## 6  2016-2017        UNC    65.87179    19.94872        18.05128
+## 7  2017-2018  Villanova    61.00000    28.95000        16.37500
+## 8  2018-2019   Virginia    54.10526    21.39474        14.31579
+## 9  2020-2021     Baylor    62.86667    24.13333        16.90000
+## 10 2021-2022     Kansas    59.82500    19.82500        15.32500
+##    OppTurnovers_avg ReboundDiff_avg k6.cluster
+## 1         11.375000        7.475000          1
+## 2         17.475000        4.475000          5
+## 3         12.625000        0.800000          1
+## 4         12.128205        5.461538          2
+## 5         13.450000        3.425000          2
+## 6         13.076923       11.641026          2
+## 7         12.450000        4.475000          3
+## 8          9.973684        5.421053          2
+## 9         16.500000        4.100000          3
+## 10        11.900000        5.200000          2</code></pre>
+<p>Well 2 &amp; 3 have dominated for the last few years. Willard had 4 teams in those groups, 3 of which made the tournament (1 was during COVID cancelled season) and 3 of which were ranked in the AP poll at some point during the season. Turgeon had 3 teams, 1 of which made the tournament (1 was during COVID cancelled season) and 1 of which was ranked as high as 8th in the AP poll. Does this mean that the recipe for success is good ball movement with lots of shots? Maybe. Can Kevin Willard get Maryland there? He got the shots part down at Seton Hall, but the key seems to be ball movement, which Seton Hall were NOT good at last season.</p>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/sportsdatablog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/sportsdatablog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+
