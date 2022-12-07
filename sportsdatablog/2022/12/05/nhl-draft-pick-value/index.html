@@ -1,0 +1,3741 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Hugo 0.104.3" />
+
+
+<title>NHL Draft Pick Value - Jetson&#39;s Sports Data Blog</title>
+<meta property="og:title" content="NHL Draft Pick Value - Jetson&#39;s Sports Data Blog">
+
+
+  <link href='https://jetsonku.github.io/sportsdatablog/favicon.ico' rel='icon' type='image/x-icon'/>
+
+
+
+  
+
+
+
+
+
+
+
+
+<link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+
+
+
+<link rel="stylesheet" href="/sportsdatablog/css/fonts.css" media="all">
+<link rel="stylesheet" href="/sportsdatablog/css/main.css" media="all">
+
+
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <header class="header">
+        <nav class="nav">
+  <a href="/" class="nav-logo">
+    <img src="/sportsdatablog/images/logo.png"
+         width="50"
+         height="50"
+         alt="Logo">
+  </a>
+
+  <ul class="nav-links">
+    
+    <li><a href="/sportsdatablog/about/">About</a></li>
+    
+    <li><a href="https://github.com/jetsonku">GitHub</a></li>
+    
+    <li><a href="https://twitter.com/jetsonku">Twitter</a></li>
+    
+  </ul>
+</nav>
+
+      </header>
+
+
+<main class="content" role="main">
+
+  <article class="article">
+    
+    <span class="article-duration">31 min read</span>
+    
+
+    <h1 class="article-title">NHL Draft Pick Value</h1>
+
+    
+    <span class="article-date">2022-12-05</span>
+    
+
+    <div class="article-content">
+      
+
+
+<div id="what-makes-a-fair-trade-for-a-first-overall-pick-analysis-of-nhl-entry-draft-pick-values-in-trade" class="section level1">
+<h1>What makes a fair trade for a first overall pick? Analysis of NHL Entry Draft Pick Values in Trade</h1>
+<p>Based on the position a player is drafted in, we can forecast their probability of making the NHL without knowing anything else about them, as long as we have multiple years of draft data. Thankfully this is something that we do have access to. I found a data file on <a href="kaggle.com">kaggle</a> where it has draft selections for the past 60-ish years along with their career statistics in the NHL.</p>
+<p>My main goal is to help analyze situations when teams make trades that involve different rounds of draft picks. Is it possible to make a standardized equivalence formula that can help us evaluate them? How many third rounders equal one first rounder?</p>
+<pre class="r"><code>library(tidyverse)
+library(gt)</code></pre>
+<p>The draft data is in a .csv that I’ve uploaded to GitHub.</p>
+<pre class="r"><code>draft_data &lt;- read_csv(&#39;https://raw.githubusercontent.com/jetsonku/jour479x_fall_2022/main/data/nhldraft.csv&#39;)</code></pre>
+<div id="exploration" class="section level2">
+<h2>Exploration</h2>
+<p>Let’s take a look. I want to count the &lt;NA&gt; in some of the key columns I want to use. When I was first looking through the spreadsheet I saw some missing values.</p>
+<pre class="r"><code>draft_data</code></pre>
+<pre><code>## # A tibble: 12,250 × 23
+##       id  year overall_pick team    player natio…¹ posit…²   age to_year amate…³
+##    &lt;dbl&gt; &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;   &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;  
+##  1     1  2022            1 Montre… Juraj… SK      LW         18      NA TPS (F…
+##  2     2  2022            2 New Je… Simon… SK      D          18      NA HK Nit…
+##  3     3  2022            3 Arizon… Logan… US      C          18      NA USA U-…
+##  4     4  2022            4 Seattl… Shane… CA      C          18      NA Kingst…
+##  5     5  2022            5 Philad… Cutte… SE      LW         18      NA USA U-…
+##  6     6  2022            6 Columb… David… CZ      D          18      NA HC Plz…
+##  7     7  2022            7 Chicag… Kevin… CA      D          18      NA Seattl…
+##  8     8  2022            8 Detroi… Marco… AT      C          18      NA Rogle …
+##  9     9  2022            9 Buffal… Matth… CA      C          18      NA Winnip…
+## 10    10  2022           10 Anahei… Pavel… RU      D          18      NA Sagina…
+## # … with 12,240 more rows, 13 more variables: games_played &lt;dbl&gt;, goals &lt;dbl&gt;,
+## #   assists &lt;dbl&gt;, points &lt;dbl&gt;, plus_minus &lt;dbl&gt;, penalties_minutes &lt;dbl&gt;,
+## #   goalie_games_played &lt;dbl&gt;, goalie_wins &lt;dbl&gt;, goalie_losses &lt;dbl&gt;,
+## #   goalie_ties_overtime &lt;dbl&gt;, save_percentage &lt;dbl&gt;,
+## #   goals_against_average &lt;dbl&gt;, point_shares &lt;dbl&gt;, and abbreviated variable
+## #   names ¹​nationality, ²​position, ³​amateur_team</code></pre>
+<pre class="r"><code>data_summary &lt;- draft_data %&gt;% group_by(year) %&gt;% 
+  summarise(
+    count=n(),
+    na_overall = sum(is.na(overall_pick)), 
+    na_nationality = sum(is.na(nationality)), 
+    na_amateur = sum(is.na(amateur_team)),
+    na_age = sum(is.na(age)),
+    na_position = sum(is.na(position)),
+    )
+data_summary</code></pre>
+<pre><code>## # A tibble: 60 × 7
+##     year count na_overall na_nationality na_amateur na_age na_position
+##    &lt;dbl&gt; &lt;int&gt;      &lt;int&gt;          &lt;int&gt;      &lt;int&gt;  &lt;int&gt;       &lt;int&gt;
+##  1  1963    21          0              0          0     16           3
+##  2  1964    24          0              0          0     15           4
+##  3  1965    11          0              0          0      9           4
+##  4  1966    24          0              0          0     10           0
+##  5  1967    18          0              0          0     15           0
+##  6  1968    24          0              0          0     14           0
+##  7  1969    84          0              0          0     33           0
+##  8  1970   115          0              0          0     52           1
+##  9  1971   117          0              0          0     66           0
+## 10  1972   152          0              0          0     84           0
+## # … with 50 more rows</code></pre>
+<p>So the data is really pretty complete going back until 2000. If we go back further, there are a lot of ages missing. And in 1979 it seems that there are less than 200 selections. We know that the number of rounds and selections has changed over time as teams enter and exit the league (Seattle, Vegas), or when the rules are changed (less rounds), or even when picks are forfeited (Arizona).</p>
+<p>The age counts are a bit unfortunate, as we can’t do any real analysis on the trends in age selections over time, but it can still tell us a little. As our understanding of players’ developments has changed, front offices have started to pick “overaged” players (over 18) less and less. The idea is that players that are 19-20 have been draft-eligible for a year already, and if they weren’t picked already, they aren’t worth as much as a more promising and moldable prospect.</p>
+<p>Here we’re looking at the average age of draft picks over time, so the left side is older drafts and the right side is most recent drafts.</p>
+<pre class="r"><code>by_year &lt;- draft_data %&gt;% filter(!is.na(age))
+by_age &lt;- by_year %&gt;% group_by(year) %&gt;% summarise(avg_age = mean(age))
+ggplot() + 
+  geom_line(data=by_age, aes(x=year, y=avg_age)) +
+  labs(x=&quot;Year&quot;, y=&quot;Average Age of Draft Pick&quot;, title=&quot;Average Age of NHL Draft Pick has Decreased&quot;)</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/12/05/nhl-draft-pick-value/index_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>This looks about right, even if we have lots of missing data for most of the graph. It is interesting that 16 year olds used to be eligible to be drafted directly into the NHL. I’m not going to read too much into the spikes and valleys due to the low samples sizes and am simply going to conclude that the average age of a drafted player has decreased to under 19.</p>
+<p>The next trends I want to take a look at are by country. As an American myself, I like to believe in the narrative that USA Hockey has done a good job of growing the game in areas that haven’t traditionally been known as hockey markets. Before I started looking at this data, I was under the assumption that this meant American draft picks were on the rise - a higher percentage of total picks and higher overall picks. In order to get at this, I’m going to group the picks by year and nationality, and then count the number of each nationality in each year. Once we have these counts, I’m pivoting the table so each country has a column where each row is a draft year and the values are the counts.</p>
+<p>For the sake of readability, I’m only looking at this as Canada, the US, and everyone else. Although this might seem like a naive approach, it ends up making the output simpler and isn’t too ridiculous given North America’s dominance in the sport.</p>
+<pre class="r"><code>by_country &lt;- draft_data %&gt;% group_by(year, nationality) %&gt;% summarise(count = n())
+country_wide &lt;- by_country %&gt;% pivot_wider(names_from = nationality, values_from = count)
+country_wide[is.na(country_wide)] &lt;- 0
+country_wide$total &lt;- rowSums( country_wide[,2:47] )
+top5 &lt;- country_wide %&gt;% select(CA, US, SE, FI, RU, total) %&gt;% filter(total &gt; 200)
+top5 &lt;- top5 %&gt;% mutate(
+  CApct= CA/total, 
+  USpct= US/total, 
+  OTHERpct= 1-(CApct+USpct)
+  ) %&gt;% filter(total &gt; 100)
+ggplot() + 
+  geom_smooth(data=top5, colour=&quot;#D80621&quot;,  fill=&#39;#8E9090&#39;, aes(x=year, y=CApct, colour=&#39;CA&#39;), alpha= 0.1) +
+  geom_smooth(data=top5, colour=&quot;#0A3161&quot;, fill=&#39;#B31942&#39;, aes(x=year, y=USpct, colour=&#39;US&#39;), alpha= 0.1, ) +
+  geom_smooth(data=top5 ,aes(x=year, y=OTHERpct, colour=&#39;Other&#39;), alpha= 0.1) +
+  labs(x = &quot;Draft Year&quot;, y=&quot;Percent of Total Draftees&quot;, title=&quot;Canada&#39;s Downfall?&quot;, subtitle=&quot;As Canada loses its stronghold on the NHL Entry Draft, European nations start to take over&quot;) + scale_colour_manual(name = &quot;Legend&quot;, 
+                      values = c(&quot;Canada&quot; = &quot;#D80621&quot;, 
+                                 &quot;US&quot; = &quot;#0A3161&quot;,
+                                 &quot;Other&quot; = &quot;#D3B300&quot;))</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/12/05/nhl-draft-pick-value/index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Now that we have these league-wide trends by nationality, another thing I wanted to take a look at was drafting habits by team. There are a multitude of different narratives surrounding teams, like Detroit loving to take Swedes and Washington loving to take Russians (or prospects from the WHL). Each of these narratives have some basis in actuality - The Red Wings experienced great success by drafting Swedish players at a time when North Americans were still the go-to choice for many teams. Nick Lidstrom, one of the greatest defensemen of all time, was drafted 53rd overall in 1989, right around the crossover of US players and European players in the graph above. The reason for this affinity? A Swedish flavor in their player personnel department. Their current Director of European Scouting, Hakan Andersson, is Swedish, and is credited with the selections of Pavel Datsyuk and fellow Swede Henrik Zetterberg among others. These were two key pieces of the Red Wings dynasty that won the Stanley Cup in 2008. The Capitals’ Assistant General Manager, Ross Mahoney, started his playing and coaching career in the Western Hockey League, so it is also no surprise that this is a league he feels comfortable selecting prospects from.</p>
+<p>I went ahead and grouped our selection data by some of these pairings: (league-team, nationality-team), to see what some of the biggest pipelines are.</p>
+<pre class="r"><code>draft_data &lt;- separate(data = draft_data, col = amateur_team, into = c(&#39;amateur_team&#39;, &#39;league&#39;), sep = &quot;\\(&quot;)
+draft_data &lt;- draft_data %&gt;% 
+  mutate(league = str_replace(league, &quot;\\)&quot;, &quot;&quot;))
+picks_by_amateur_team &lt;- draft_data %&gt;% group_by(team, amateur_team) %&gt;% summarise(count=n()) %&gt;% arrange(desc(count))
+picks_by_amateur_team</code></pre>
+<pre><code>## # A tibble: 7,076 × 3
+## # Groups:   team [44]
+##    team                amateur_team                 count
+##    &lt;chr&gt;               &lt;chr&gt;                        &lt;int&gt;
+##  1 Toronto Maple Leafs &quot;Toronto Marlboros &quot;            19
+##  2 Boston Bruins       &quot;Peterborough Petes &quot;           17
+##  3 Pittsburgh Penguins &quot;Oshawa Generals &quot;              17
+##  4 Washington Capitals &quot;London Knights &quot;               16
+##  5 New Jersey Devils   &quot;USA U-18 Development Team &quot;    15
+##  6 Anaheim Ducks       &quot;USA U-18 Development Team &quot;    14
+##  7 Buffalo Sabres      &quot;Peterborough Petes &quot;           14
+##  8 Chicago Blackhawks  &quot;USA U-18 Development Team &quot;    14
+##  9 Montreal Canadiens  &quot;Ottawa 67&#39;s &quot;                  14
+## 10 Carolina Hurricanes &quot;Plymouth Whalers &quot;             13
+## # … with 7,066 more rows</code></pre>
+<pre class="r"><code>picks_by_league &lt;- draft_data %&gt;% group_by(team, league) %&gt;% summarise(count=n()) %&gt;% arrange(desc(count))
+picks_by_league</code></pre>
+<pre><code>## # A tibble: 1,885 × 3
+## # Groups:   team [44]
+##    team                league count
+##    &lt;chr&gt;               &lt;chr&gt;  &lt;int&gt;
+##  1 Montreal Canadiens  QMJHL    131
+##  2 Toronto Maple Leafs OHL       99
+##  3 Los Angeles Kings   OHL       97
+##  4 Buffalo Sabres      OHL       91
+##  5 Calgary Flames      WHL       91
+##  6 Buffalo Sabres      WHL       85
+##  7 Vancouver Canucks   WHL       85
+##  8 Chicago Blackhawks  OHL       84
+##  9 New York Islanders  WHL       83
+## 10 Washington Capitals WHL       83
+## # … with 1,875 more rows</code></pre>
+<pre class="r"><code>picks_by_league %&gt;% filter(grepl(&quot;Sweden&quot;, league, fixed = TRUE)) %&gt;% group_by(team) %&gt;% summarise(setotal = sum(count)) %&gt;% arrange(desc(setotal))</code></pre>
+<pre><code>## # A tibble: 40 × 2
+##    team                setotal
+##    &lt;chr&gt;                 &lt;int&gt;
+##  1 Detroit Red Wings        76
+##  2 New York Rangers         42
+##  3 Calgary Flames           37
+##  4 Vancouver Canucks        35
+##  5 New York Islanders       34
+##  6 Philadelphia Flyers      33
+##  7 St. Louis Blues          33
+##  8 Dallas Stars             32
+##  9 Los Angeles Kings        30
+## 10 Boston Bruins            29
+## # … with 30 more rows</code></pre>
+<pre class="r"><code>picks_by_league %&gt;% filter(grepl(&quot;Russia&quot;, league, fixed = TRUE)) %&gt;% group_by(team) %&gt;% summarise(rutotal = sum(count)) %&gt;% arrange(desc(rutotal))</code></pre>
+<pre><code>## # A tibble: 35 × 2
+##    team                rutotal
+##    &lt;chr&gt;                 &lt;int&gt;
+##  1 Tampa Bay Lightning      39
+##  2 New Jersey Devils        26
+##  3 Chicago Blackhawks       25
+##  4 New York Rangers         24
+##  5 Toronto Maple Leafs      24
+##  6 Washington Capitals      22
+##  7 Dallas Stars             20
+##  8 Detroit Red Wings        20
+##  9 Philadelphia Flyers      20
+## 10 St. Louis Blues          20
+## # … with 25 more rows</code></pre>
+<pre class="r"><code>picks_by_league %&gt;% filter(grepl(&quot;Finland&quot;, league, fixed = TRUE)) %&gt;% group_by(team) %&gt;% summarise(fitotal = sum(count)) %&gt;% arrange(desc(fitotal))</code></pre>
+<pre><code>## # A tibble: 38 × 2
+##    team                fitotal
+##    &lt;chr&gt;                 &lt;int&gt;
+##  1 Los Angeles Kings        23
+##  2 Edmonton Oilers          22
+##  3 Nashville Predators      21
+##  4 New York Islanders       21
+##  5 New York Rangers         21
+##  6 Montreal Canadiens       20
+##  7 Chicago Blackhawks       19
+##  8 Dallas Stars             19
+##  9 Winnipeg Jets            19
+## 10 Calgary Flames           18
+## # … with 28 more rows</code></pre>
+<p>Our first one here is NHL team and amateur team. The Maple Leafs haven’t actually picked a player from the Marlboros since 1989, which is when the OHL team moved to Hamilton and later Guelph. I expect to see a lot of original six teams on here, and this is an example. The Marlboros were actually sponsored/owned by the Maple Leafs until 1967, when junior teams were no longer allowed to be sponsored by professional teams. They were both still owned by the Smythe family (yes, Conn Smythe) until 1989 so I’m assuming that’s the connection there.</p>
+<p>Moving down the list, I don’t think anything else here is really that fascinating. The Capitals are on here with London. I can think of two current players, Connor McMichael John Carlson, that played for London. I believe that Carlson was drafted out the USHL however, and played in London the next season.</p>
+<p>Next table is leagues. We know the Canadiens love to stick to their Quebec natives and other French-Canadian individuals. And what do you know? The Capitals are the youngest team in the top 10 in terms of date founded, but it seems there’s a pretty solid pipeline there.</p>
+<p>The next table is Swedish draft picks. And at the top is our other example. By FAR, they’ve taken the most Swedish players in history. Following this we have Russia and Finland. Tampa Bay is not who I expected to be top for Russia, but it’s something I could see. They have a good amount of Russian players. The Capitals are up there, but not as high as I thought they would be. The Finland table doesn’t have any crazy stories I don’t think. The most interesting thing to me is the marriage between Detroit and Stockholm.</p>
+</div>
+<div id="pick-value" class="section level2">
+<h2>Pick Value</h2>
+<p>My main goal was to find out how the value of a pick decreases as you move down the draft by using historical data to calculate the probability of “success” at a given pick. We can do this using a variety of definitions, but the first one I want to look at is the average number of NHL games played based on pick number. Without knowing anything else about the prospect, if we are told that he is picked 16th overall, how many career NHL games can we expect him to play. Now obviously this is a rough estimate. Careers can vary in so many different ways, but I think we have enough data to give us an idea of how the talent is spread throughout the draft. If a pick is successful, the player should be playing more games and staying in the NHL as long as possible.</p>
+<pre class="r"><code>draft_data &lt;- draft_data %&gt;% mutate(games_played = ifelse(is.na(games_played), 0, games_played)) %&gt;% mutate(point_shares = ifelse(is.na(point_shares), 0, point_shares)) %&gt;% mutate(pspg = ifelse(is.na(points), 0, point_shares/games_played))
+gp &lt;- draft_data %&gt;% group_by(overall_pick) %&gt;% summarise(mean_games = mean(games_played), mean_point_shares = mean(point_shares), mean_pspg = mean(pspg),count = n())
+gp &lt;- gp %&gt;% filter(count &gt; 30)
+ggplot() + 
+  geom_point(data=gp, aes(x=overall_pick, y=mean_games))</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/12/05/nhl-draft-pick-value/index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>So this is the curve we get. Towards the left we have first rounders and as we move right we move down the draft board. My initial reaction to this graph is that there really seems to be a drop off after the first round. The decline is so sharp it makes me wonder how much of those games are those prospects getting simply because they have the first round label? Even though they might not necessarily deserve those games, sometimes they may be given a longer or second look because there is pressure on the front office and on those picks.</p>
+<p>I’m also going to look at Point Shares, hockey’s version of Wins Above Replacement. It essentially cumulatively measures throughout a player’s career how they affect their team’s chances of winning using a variety of statistics when compared to a “league average” player. I also want to look at Point Shares Per Game, because Point Shares are cumulative over a career, like I said. Players like Mario Lemieux, whose career was cut short due to health issues might end up with less than a decent second liner who played a lengthy career. It should also be noted that goalies have boosted Point Share numbers because they have a bigger impact on the game, but since we’re looking at average of each pick it shouldn’t be skewing our data.</p>
+<p>Lastly I’m also going to fit a regression curve to the data. I won’t use polynomial or linear regression, but instead use a log curve, which will fit our data perfectly.</p>
+<pre class="r"><code>ggplot(gp, aes(x=overall_pick, y=mean_games)) + 
+  geom_point(col = &#39;black&#39;) + 
+  stat_smooth(method=&quot;lm&quot;, formula=y ~ log(x),colour=&quot;black&quot;)</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/12/05/nhl-draft-pick-value/index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(gp, aes(x=overall_pick, y=mean_point_shares)) + 
+  geom_point(col = &#39;red&#39;) + 
+  stat_smooth(method=&quot;lm&quot;, formula=y ~ log(x),colour=&quot;red&quot;)</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/12/05/nhl-draft-pick-value/index_files/figure-html/unnamed-chunk-8-2.png" width="672" /></p>
+<pre class="r"><code>ggplot(gp, aes(x=overall_pick, y=mean_pspg)) + 
+  geom_point(col = &#39;blue&#39;) + 
+  stat_smooth(method=&quot;lm&quot;, formula=y ~ log(x),colour=&quot;blue&quot;)</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/12/05/nhl-draft-pick-value/index_files/figure-html/unnamed-chunk-8-3.png" width="672" /></p>
+<p>It looks like the log regression is a good fit. Point shares have a similar trend to games played. I’m going to use PSPG (Point Shares Per Game) moving forward because I think it measures the game by game impact of a player more effectively than games played or a one-dimensional stat like points or goals.</p>
+<p>I’m going to fit these curves and put in three new columns of expected stats based on draft position. This way I can see players who have underperformed or overperformed their draft position.</p>
+<pre class="r"><code>fit &lt;- lm(mean_games ~ log(overall_pick), data=gp)
+pred_games &lt;- fit %&gt;% predict(draft_data)
+draft_data &lt;- draft_data %&gt;% mutate(xgames = pred_games, residualgames= games_played-xgames)
+fit &lt;- lm(mean_point_shares ~ log(overall_pick), data=gp)
+pred_point_shares &lt;- fit %&gt;% predict(draft_data)
+draft_data &lt;- draft_data %&gt;% mutate(xpointshares = pred_point_shares, residualpointshares= point_shares-xpointshares)
+fit &lt;- lm(mean_pspg ~ log(overall_pick), data=gp)
+pred_pspg &lt;- fit %&gt;% predict(draft_data)
+draft_data &lt;- draft_data %&gt;% mutate(xpspg = pred_pspg, residualpspg= pspg-xpspg)
+summary(fit)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = mean_pspg ~ log(overall_pick), data = gp)
+## 
+## Residuals:
+##        Min         1Q     Median         3Q        Max 
+## -0.0145862 -0.0033894 -0.0002938  0.0034530  0.0189526 
+## 
+## Coefficients:
+##                     Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)        0.0681514  0.0016346   41.69   &lt;2e-16 ***
+## log(overall_pick) -0.0119573  0.0003633  -32.91   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.00511 on 215 degrees of freedom
+## Multiple R-squared:  0.8344, Adjusted R-squared:  0.8336 
+## F-statistic:  1083 on 1 and 215 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>top &lt;- draft_data %&gt;% 
+  arrange(desc(residualpspg)) %&gt;%
+  filter(position != &#39;G&#39;, games_played &gt; 41) %&gt;%
+  select(year, overall_pick, team, player, to_year, amateur_team, pspg, xpspg, residualpspg)
+head(top, 20) %&gt;%
+  gt() %&gt;%
+  cols_label(
+    year = &quot;Year&quot;,
+    overall_pick = &quot;Overall Pick&quot;, 
+    team = &quot;Draft Team&quot;, 
+    player = &quot;Name&quot;, 
+    to_year = &quot;Last Year Played&quot;, 
+    amateur_team = &quot;Amateur Team&quot;, 
+    pspg = &quot;Career NHL Point Shares per Game&quot;, 
+    xpspg = &quot;Expected Career NHL Point Shares per Game&quot;, 
+    residualpspg = &quot;Difference&quot;
+   
+  ) %&gt;%
+  tab_header(
+    title = &quot;Is Kirill Kaprizov the Greatest NHL Draft Gem of All Time?&quot;,
+    subtitle = &quot;Based on his draft position and impact so far, he&#39;s on track (among skaters)&quot;
+  ) %&gt;%  
+  tab_source_note(
+    source_note = md(&quot;**By:** Jetson Ku  |  **Source:** [Hockey Reference](https://www.hockey-reference.com/) | Min. 41 Career GP to qualify&quot;)
+  ) %&gt;%
+    tab_style(
+    style = cell_text(color = &quot;black&quot;, weight = &quot;bold&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;title&quot;)
+  ) %&gt;% 
+  tab_style(
+    style = cell_text(color = &quot;black&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;subtitle&quot;)
+  ) %&gt;%
+  tab_style(
+     locations = cells_column_labels(columns = everything()),
+     style = list(
+       cell_borders(sides = &quot;bottom&quot;, weight = px(3)),
+       cell_text(weight = &quot;bold&quot;, size=12)
+     )
+   ) %&gt;%
+  opt_row_striping()</code></pre>
+<div id="hjrofiemzj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#hjrofiemzj .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#hjrofiemzj .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#hjrofiemzj .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#hjrofiemzj .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#hjrofiemzj .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#hjrofiemzj .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hjrofiemzj .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#hjrofiemzj .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#hjrofiemzj .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#hjrofiemzj .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#hjrofiemzj .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#hjrofiemzj .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#hjrofiemzj .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#hjrofiemzj .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#hjrofiemzj .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#hjrofiemzj .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#hjrofiemzj .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#hjrofiemzj .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hjrofiemzj .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#hjrofiemzj .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#hjrofiemzj .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hjrofiemzj .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#hjrofiemzj .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#hjrofiemzj .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hjrofiemzj .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hjrofiemzj .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#hjrofiemzj .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#hjrofiemzj .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hjrofiemzj .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#hjrofiemzj .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hjrofiemzj .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#hjrofiemzj .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#hjrofiemzj .gt_left {
+  text-align: left;
+}
+
+#hjrofiemzj .gt_center {
+  text-align: center;
+}
+
+#hjrofiemzj .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#hjrofiemzj .gt_font_normal {
+  font-weight: normal;
+}
+
+#hjrofiemzj .gt_font_bold {
+  font-weight: bold;
+}
+
+#hjrofiemzj .gt_font_italic {
+  font-style: italic;
+}
+
+#hjrofiemzj .gt_super {
+  font-size: 65%;
+}
+
+#hjrofiemzj .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#hjrofiemzj .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#hjrofiemzj .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#hjrofiemzj .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#hjrofiemzj .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#hjrofiemzj .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#hjrofiemzj .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <td colspan="9" class="gt_heading gt_title gt_font_normal" style="color: #000000; text-align: left; font-weight: bold;">Is Kirill Kaprizov the Greatest NHL Draft Gem of All Time?</td>
+    </tr>
+    <tr>
+      <td colspan="9" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="color: #000000; text-align: left;">Based on his draft position and impact so far, he's on track (among skaters)</td>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Year">Year</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall Pick">Overall Pick</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Draft Team">Draft Team</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Name">Name</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year Played">Last Year Played</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Amateur Team">Amateur Team</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL Point Shares per Game">Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career NHL Point Shares per Game">Expected Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Difference">Difference</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="year" class="gt_row gt_right">2015</td>
+<td headers="overall_pick" class="gt_row gt_right">135</td>
+<td headers="team" class="gt_row gt_left">Minnesota Wild</td>
+<td headers="player" class="gt_row gt_left">Kirill Kaprizov</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Metallurg Novokuznetsk </td>
+<td headers="pspg" class="gt_row gt_right">0.1419118</td>
+<td headers="xpspg" class="gt_row gt_right">0.009497416</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1324143</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1989</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">113</td>
+<td headers="team" class="gt_row gt_left gt_striped">Vancouver Canucks</td>
+<td headers="player" class="gt_row gt_left gt_striped">Pavel Bure</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2003</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">CSKA Moskva </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1326211</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.011624468</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1209966</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2017</td>
+<td headers="overall_pick" class="gt_row gt_right">4</td>
+<td headers="team" class="gt_row gt_left">Colorado Avalanche</td>
+<td headers="player" class="gt_row gt_left">Cale Makar</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Brooks </td>
+<td headers="pspg" class="gt_row gt_right">0.1696629</td>
+<td headers="xpspg" class="gt_row gt_right">0.051575010</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1180879</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2011</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">58</td>
+<td headers="team" class="gt_row gt_left gt_striped">Tampa Bay Lightning</td>
+<td headers="player" class="gt_row gt_left gt_striped">Nikita Kucherov</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Krasnaya Armiya Moskva </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1370107</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.019599344</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1174113</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1984</td>
+<td headers="overall_pick" class="gt_row gt_right">1</td>
+<td headers="team" class="gt_row gt_left">Pittsburgh Penguins</td>
+<td headers="player" class="gt_row gt_left">Mario Lemieux</td>
+<td headers="to_year" class="gt_row gt_right">2006</td>
+<td headers="amateur_team" class="gt_row gt_left">Laval Voisins </td>
+<td headers="pspg" class="gt_row gt_right">0.1834973</td>
+<td headers="xpspg" class="gt_row gt_right">0.068151383</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1153459</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1989</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">53</td>
+<td headers="team" class="gt_row gt_left gt_striped">Detroit Red Wings</td>
+<td headers="player" class="gt_row gt_left gt_striped">Nicklas Lidstrom</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2012</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Vasteras IK </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1354220</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.020677310</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1147447</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2016</td>
+<td headers="overall_pick" class="gt_row gt_right">66</td>
+<td headers="team" class="gt_row gt_left">Calgary Flames</td>
+<td headers="player" class="gt_row gt_left">Adam Fox</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">USA U-18 Development Team </td>
+<td headers="pspg" class="gt_row gt_right">0.1325123</td>
+<td headers="xpspg" class="gt_row gt_right">0.018054317</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1144580</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1990</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">85</td>
+<td headers="team" class="gt_row gt_left gt_striped">New York Rangers</td>
+<td headers="player" class="gt_row gt_left gt_striped">Sergei Zubov</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2009</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">CSKA Moskva </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1280899</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.015029156</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1130607</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1977</td>
+<td headers="overall_pick" class="gt_row gt_right">15</td>
+<td headers="team" class="gt_row gt_left">New York Islanders</td>
+<td headers="player" class="gt_row gt_left">Mike Bossy</td>
+<td headers="to_year" class="gt_row gt_right">1987</td>
+<td headers="amateur_team" class="gt_row gt_left">Laval National </td>
+<td headers="pspg" class="gt_row gt_right">0.1474734</td>
+<td headers="xpspg" class="gt_row gt_right">0.035770345</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1117031</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1984</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">117</td>
+<td headers="team" class="gt_row gt_left gt_striped">Calgary Flames</td>
+<td headers="player" class="gt_row gt_left gt_striped">Brett Hull</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2006</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Penticton </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1218282</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.011208519</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1106197</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1998</td>
+<td headers="overall_pick" class="gt_row gt_right">171</td>
+<td headers="team" class="gt_row gt_left">Detroit Red Wings</td>
+<td headers="player" class="gt_row gt_left">Pavel Datsyuk</td>
+<td headers="to_year" class="gt_row gt_right">2016</td>
+<td headers="amateur_team" class="gt_row gt_left">Dynamo-Energiya Yekaterinburg </td>
+<td headers="pspg" class="gt_row gt_right">0.1166842</td>
+<td headers="xpspg" class="gt_row gt_right">0.006670838</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1100133</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1979</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">8</td>
+<td headers="team" class="gt_row gt_left gt_striped">Boston Bruins</td>
+<td headers="player" class="gt_row gt_left gt_striped">Raymond Bourque</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2001</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Verdun Eperviers </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1505583</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.043286823</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1072715</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2006</td>
+<td headers="overall_pick" class="gt_row gt_right">71</td>
+<td headers="team" class="gt_row gt_left">Boston Bruins</td>
+<td headers="player" class="gt_row gt_left">Brad Marchand</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Moncton Wildcats </td>
+<td headers="pspg" class="gt_row gt_right">0.1217391</td>
+<td headers="xpspg" class="gt_row gt_right">0.017181132</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1045580</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2014</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">108</td>
+<td headers="team" class="gt_row gt_left gt_striped">New York Islanders</td>
+<td headers="player" class="gt_row gt_left gt_striped">Devon Toews</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Quinnipiac </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1157447</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.012165616</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1035791</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1993</td>
+<td headers="overall_pick" class="gt_row gt_right">227</td>
+<td headers="team" class="gt_row gt_left">Ottawa Senators</td>
+<td headers="player" class="gt_row gt_left">Pavol Demitra</td>
+<td headers="to_year" class="gt_row gt_right">2010</td>
+<td headers="amateur_team" class="gt_row gt_left">HK Dukla Trencin </td>
+<td headers="pspg" class="gt_row gt_right">0.1062574</td>
+<td headers="xpspg" class="gt_row gt_right">0.003283490</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1029739</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1981</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">15</td>
+<td headers="team" class="gt_row gt_left gt_striped">Calgary Flames</td>
+<td headers="player" class="gt_row gt_left gt_striped">Al MacInnis</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2004</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Kitchener Rangers </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1377119</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.035770345</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1019415</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2015</td>
+<td headers="overall_pick" class="gt_row gt_right">1</td>
+<td headers="team" class="gt_row gt_left">Edmonton Oilers</td>
+<td headers="player" class="gt_row gt_left">Connor McDavid</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Erie Otters </td>
+<td headers="pspg" class="gt_row gt_right">0.1691992</td>
+<td headers="xpspg" class="gt_row gt_right">0.068151383</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1010478</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2011</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">104</td>
+<td headers="team" class="gt_row gt_left gt_striped">Calgary Flames</td>
+<td headers="player" class="gt_row gt_left gt_striped">John Gaudreau</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Dubuque Fighting Saints </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1134551</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.012616889</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1008383</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1984</td>
+<td headers="overall_pick" class="gt_row gt_right">180</td>
+<td headers="team" class="gt_row gt_left">Calgary Flames</td>
+<td headers="player" class="gt_row gt_left">Gary Suter</td>
+<td headers="to_year" class="gt_row gt_right">2002</td>
+<td headers="amateur_team" class="gt_row gt_left">Wisconsin </td>
+<td headers="pspg" class="gt_row gt_right">0.1062009</td>
+<td headers="xpspg" class="gt_row gt_right">0.006057507</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1001434</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2014</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">25</td>
+<td headers="team" class="gt_row gt_left gt_striped">Boston Bruins</td>
+<td headers="player" class="gt_row gt_left gt_striped">David Pastrnak</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Sodertalje SK </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1298039</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.029662237</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1001417</td></tr>
+  </tbody>
+  <tfoot class="gt_sourcenotes">
+    <tr>
+      <td class="gt_sourcenote" colspan="9"><strong>By:</strong> Jetson Ku  |  <strong>Source:</strong> <a href="https://www.hockey-reference.com/">Hockey Reference</a> | Min. 41 Career GP to qualify</td>
+    </tr>
+  </tfoot>
+  
+</table>
+</div>
+<p>To me, these tables were the most interesting part of my investigation. I think this is a great list of draft picks who provided excellent value based on their draft positions. The only #1 overalls in the top 20 here are Mario and McDavid. That’s just a testament to how incredible their careers have been so far. I also see this as a huge endorsement of Cale Makar, who has entered himself into the discussion of possible greatest defenseman of all time. I’m happy with that list. Now what about busts?</p>
+<pre class="r"><code>library(gt)
+bottom &lt;- draft_data %&gt;% 
+  arrange((residualpspg)) %&gt;%
+  filter(position != &#39;G&#39;, games_played &gt; 41) %&gt;%
+  select(year, overall_pick, team, player, to_year, amateur_team, pspg, xpspg, residualpspg)
+head(bottom, 20) %&gt;% 
+  gt() %&gt;%
+  cols_label(
+    year = &quot;Year&quot;,
+    overall_pick = &quot;Overall Pick&quot;, 
+    team = &quot;Draft Team&quot;, 
+    player = &quot;Name&quot;, 
+    to_year = &quot;Last Year Played&quot;, 
+    amateur_team = &quot;Amateur Team&quot;, 
+    pspg = &quot;Career NHL Point Shares per Game&quot;, 
+    xpspg = &quot;Expected Career NHL Point Shares per Game&quot;, 
+    residualpspg = &quot;Difference&quot;
+   
+  ) %&gt;%
+  tab_header(
+    title = &quot;Biggest Busts&quot;,
+    subtitle = &quot;Skaters Only&quot;
+  ) %&gt;%  
+  tab_source_note(
+    source_note = md(&quot;**By:** Jetson Ku  |  **Source:** [Hockey Reference](https://www.hockey-reference.com/) | Min. 82 Career GP to qualify&quot;)
+  ) %&gt;%
+    tab_style(
+    style = cell_text(color = &quot;black&quot;, weight = &quot;bold&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;title&quot;)
+  ) %&gt;% 
+  tab_style(
+    style = cell_text(color = &quot;black&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;subtitle&quot;)
+  ) %&gt;%
+  tab_style(
+     locations = cells_column_labels(columns = everything()),
+     style = list(
+       cell_borders(sides = &quot;bottom&quot;, weight = px(3)),
+       cell_text(weight = &quot;bold&quot;, size=12)
+     )
+   ) %&gt;%
+  opt_row_striping()</code></pre>
+<div id="yitgbstbzm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#yitgbstbzm .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#yitgbstbzm .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#yitgbstbzm .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#yitgbstbzm .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#yitgbstbzm .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#yitgbstbzm .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#yitgbstbzm .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#yitgbstbzm .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#yitgbstbzm .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#yitgbstbzm .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#yitgbstbzm .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#yitgbstbzm .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#yitgbstbzm .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#yitgbstbzm .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#yitgbstbzm .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#yitgbstbzm .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#yitgbstbzm .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#yitgbstbzm .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#yitgbstbzm .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#yitgbstbzm .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#yitgbstbzm .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#yitgbstbzm .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#yitgbstbzm .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#yitgbstbzm .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#yitgbstbzm .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#yitgbstbzm .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#yitgbstbzm .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#yitgbstbzm .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#yitgbstbzm .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#yitgbstbzm .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#yitgbstbzm .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#yitgbstbzm .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#yitgbstbzm .gt_left {
+  text-align: left;
+}
+
+#yitgbstbzm .gt_center {
+  text-align: center;
+}
+
+#yitgbstbzm .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#yitgbstbzm .gt_font_normal {
+  font-weight: normal;
+}
+
+#yitgbstbzm .gt_font_bold {
+  font-weight: bold;
+}
+
+#yitgbstbzm .gt_font_italic {
+  font-style: italic;
+}
+
+#yitgbstbzm .gt_super {
+  font-size: 65%;
+}
+
+#yitgbstbzm .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#yitgbstbzm .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#yitgbstbzm .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#yitgbstbzm .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#yitgbstbzm .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#yitgbstbzm .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#yitgbstbzm .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <td colspan="9" class="gt_heading gt_title gt_font_normal" style="color: #000000; text-align: left; font-weight: bold;">Biggest Busts</td>
+    </tr>
+    <tr>
+      <td colspan="9" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="color: #000000; text-align: left;">Skaters Only</td>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Year">Year</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall Pick">Overall Pick</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Draft Team">Draft Team</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Name">Name</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year Played">Last Year Played</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Amateur Team">Amateur Team</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL Point Shares per Game">Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career NHL Point Shares per Game">Expected Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Difference">Difference</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="year" class="gt_row gt_right">1991</td>
+<td headers="overall_pick" class="gt_row gt_right">7</td>
+<td headers="team" class="gt_row gt_left">Vancouver Canucks</td>
+<td headers="player" class="gt_row gt_left">Alek Stojanov</td>
+<td headers="to_year" class="gt_row gt_right">1997</td>
+<td headers="amateur_team" class="gt_row gt_left">Dukes of Hamilton </td>
+<td headers="pspg" class="gt_row gt_right">-0.025233645</td>
+<td headers="xpspg" class="gt_row gt_right">0.04488350</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.07011715</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1976</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">4</td>
+<td headers="team" class="gt_row gt_left gt_striped">Detroit Red Wings</td>
+<td headers="player" class="gt_row gt_left gt_striped">Fred Williams</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">1977</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Saskatoon Blades </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.015909091</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.05157501</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.06748410</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1971</td>
+<td headers="overall_pick" class="gt_row gt_right">8</td>
+<td headers="team" class="gt_row gt_left">Philadelphia Flyers</td>
+<td headers="player" class="gt_row gt_left">Larry Wright</td>
+<td headers="to_year" class="gt_row gt_right">1978</td>
+<td headers="amateur_team" class="gt_row gt_left">Regina Pats </td>
+<td headers="pspg" class="gt_row gt_right">-0.019811321</td>
+<td headers="xpspg" class="gt_row gt_right">0.04328682</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.06309814</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1989</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">2</td>
+<td headers="team" class="gt_row gt_left gt_striped">New York Islanders</td>
+<td headers="player" class="gt_row gt_left gt_striped">Dave Chyzowski</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">1997</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Kamloops Blazers </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.003174603</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.05986320</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.06303780</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2004</td>
+<td headers="overall_pick" class="gt_row gt_right">8</td>
+<td headers="team" class="gt_row gt_left">Columbus Blue Jackets</td>
+<td headers="player" class="gt_row gt_left">Alexandre Picard</td>
+<td headers="to_year" class="gt_row gt_right">2010</td>
+<td headers="amateur_team" class="gt_row gt_left">Lewiston MAINEiacs </td>
+<td headers="pspg" class="gt_row gt_right">-0.016417910</td>
+<td headers="xpspg" class="gt_row gt_right">0.04328682</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.05970473</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1994</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">9</td>
+<td headers="team" class="gt_row gt_left gt_striped">New York Islanders</td>
+<td headers="player" class="gt_row gt_left gt_striped">Brett Lindros</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">1996</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Kingston Frontenacs </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.017647059</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.04187845</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.05952551</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1990</td>
+<td headers="overall_pick" class="gt_row gt_right">18</td>
+<td headers="team" class="gt_row gt_left">Vancouver Canucks</td>
+<td headers="player" class="gt_row gt_left">Shawn Antoski</td>
+<td headers="to_year" class="gt_row gt_right">1998</td>
+<td headers="amateur_team" class="gt_row gt_left">North Bay Centennials </td>
+<td headers="pspg" class="gt_row gt_right">-0.024043716</td>
+<td headers="xpspg" class="gt_row gt_right">0.03359027</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.05763398</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1994</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">4</td>
+<td headers="team" class="gt_row gt_left gt_striped">Edmonton Oilers</td>
+<td headers="player" class="gt_row gt_left gt_striped">Jason Bonsignore</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">1999</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Niagara Falls Thunder </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.005063291</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.05157501</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.05663830</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1975</td>
+<td headers="overall_pick" class="gt_row gt_right">3</td>
+<td headers="team" class="gt_row gt_left">California Golden Seals</td>
+<td headers="player" class="gt_row gt_left">Ralph Klassen</td>
+<td headers="to_year" class="gt_row gt_right">1984</td>
+<td headers="amateur_team" class="gt_row gt_left">Saskatoon Blades </td>
+<td headers="pspg" class="gt_row gt_right">-0.001609658</td>
+<td headers="xpspg" class="gt_row gt_right">0.05501492</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.05662458</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1968</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">8</td>
+<td headers="team" class="gt_row gt_left gt_striped">Philadelphia Flyers</td>
+<td headers="player" class="gt_row gt_left gt_striped">Lew Morrison</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">1978</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Flin Flon Bombers </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.011170213</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.04328682</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.05445704</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1995</td>
+<td headers="overall_pick" class="gt_row gt_right">6</td>
+<td headers="team" class="gt_row gt_left">Edmonton Oilers</td>
+<td headers="player" class="gt_row gt_left">Steve Kelly</td>
+<td headers="to_year" class="gt_row gt_right">2008</td>
+<td headers="amateur_team" class="gt_row gt_left">Prince Albert Raiders </td>
+<td headers="pspg" class="gt_row gt_right">-0.007382550</td>
+<td headers="xpspg" class="gt_row gt_right">0.04672673</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.05410928</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1979</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">19</td>
+<td headers="team" class="gt_row gt_left gt_striped">Winnipeg Jets</td>
+<td headers="player" class="gt_row gt_left gt_striped">Jimmy Mann</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">1988</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Sherbrooke Castors </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.019795222</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.03294377</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.05273899</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1977</td>
+<td headers="overall_pick" class="gt_row gt_right">5</td>
+<td headers="team" class="gt_row gt_left">Cleveland Barons</td>
+<td headers="player" class="gt_row gt_left">Mike Crombeen</td>
+<td headers="to_year" class="gt_row gt_right">1985</td>
+<td headers="amateur_team" class="gt_row gt_left">Kingston Canadians </td>
+<td headers="pspg" class="gt_row gt_right">-0.002947368</td>
+<td headers="xpspg" class="gt_row gt_right">0.04890681</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.05185418</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1976</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">14</td>
+<td headers="team" class="gt_row gt_left gt_striped">New York Islanders</td>
+<td headers="player" class="gt_row gt_left gt_striped">Alex McKendry</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">1981</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Sudbury Wolves </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.015217391</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.03659532</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.05181271</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1985</td>
+<td headers="overall_pick" class="gt_row gt_right">43</td>
+<td headers="team" class="gt_row gt_left">Toronto Maple Leafs</td>
+<td headers="player" class="gt_row gt_left">Dave Thomlinson</td>
+<td headers="to_year" class="gt_row gt_right">1995</td>
+<td headers="amateur_team" class="gt_row gt_left">Brandon Wheat Kings </td>
+<td headers="pspg" class="gt_row gt_right">-0.028571429</td>
+<td headers="xpspg" class="gt_row gt_right">0.02317749</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.05174892</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1963</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">1</td>
+<td headers="team" class="gt_row gt_left gt_striped">Montreal Canadiens</td>
+<td headers="player" class="gt_row gt_left gt_striped">Garry Monahan</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">1979</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">St. Michael's Majors </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.016443850</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.06815138</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.05170753</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1986</td>
+<td headers="overall_pick" class="gt_row gt_right">3</td>
+<td headers="team" class="gt_row gt_left">New Jersey Devils</td>
+<td headers="player" class="gt_row gt_left">Neil Brady</td>
+<td headers="to_year" class="gt_row gt_right">1994</td>
+<td headers="amateur_team" class="gt_row gt_left">Medicine Hat Tigers </td>
+<td headers="pspg" class="gt_row gt_right">0.003370787</td>
+<td headers="xpspg" class="gt_row gt_right">0.05501492</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.05164413</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2017</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">7</td>
+<td headers="team" class="gt_row gt_left gt_striped">New York Rangers</td>
+<td headers="player" class="gt_row gt_left gt_striped">Lias Andersson</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">HV71 </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.005504587</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.04488350</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.05038809</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2020</td>
+<td headers="overall_pick" class="gt_row gt_right">2</td>
+<td headers="team" class="gt_row gt_left">Los Angeles Kings</td>
+<td headers="player" class="gt_row gt_left">Quinton Byfield</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Sudbury Wolves </td>
+<td headers="pspg" class="gt_row gt_right">0.010869565</td>
+<td headers="xpspg" class="gt_row gt_right">0.05986320</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.04899363</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2001</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">3</td>
+<td headers="team" class="gt_row gt_left gt_striped">Tampa Bay Lightning</td>
+<td headers="player" class="gt_row gt_left gt_striped">Alexander Svitov</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2007</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Avangard Omsk </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.006145251</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.05501492</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.04886967</td></tr>
+  </tbody>
+  <tfoot class="gt_sourcenotes">
+    <tr>
+      <td class="gt_sourcenote" colspan="9"><strong>By:</strong> Jetson Ku  |  <strong>Source:</strong> <a href="https://www.hockey-reference.com/">Hockey Reference</a> | Min. 82 Career GP to qualify</td>
+    </tr>
+  </tfoot>
+  
+</table>
+</div>
+<p>I have to admit - I only know two namse on this list. The only players drafted after 2001: Lias Andersson and Quinton Byfield. And to our table’s credit, Andersson’s career has indeed been a bit of a disaster so far. From <a href="https://www.youtube.com/watch?v=Q-yJHAJHSbE">going viral for a reason he probably regrets</a>, to spending time in the minors and then back in Sweden, to then being traded, he has definitely struggled to establish himself in the NHL as a top-10 pick. Notable names he was picked over include Jeremy Swayman, Jake Oettinger, Josh Norris, and the current NHL LEADER in goals - Jason Robertson. (Although New York is not the only team to have missed on Robertson). Byfield is still developing, and I think it’s unfair to call him a bust yet. However, for a second overall pick, his career hasn’t taken off quite yet.</p>
+<p>Stojanov, who was a below average player by these standards, was picked 7th in 1991. He is actually Macedonian, and was a huge disappointment for the Vancouver Canucks, who ended up trading him to Pittsburgh for Markus Naslund. Stojanov played 45 games over two seasons for Pittsburgh, where he went down to the minors and never came back up again. Naslund? Went on to be the captain of the Canucks and became their all-time leading scorer, playing for over 10 years. Ol’ Alek is thus known best for being dealt in one of the most lopsided trades ever.</p>
+<pre class="r"><code>library(gt)
+bottom &lt;- draft_data %&gt;% 
+  arrange((residualpspg)) %&gt;%
+  filter(position != &#39;G&#39;, games_played &gt; 41, year &gt; 2009) %&gt;%
+  select(year, overall_pick, team, player, to_year, amateur_team, pspg, xpspg, residualpspg)
+head(bottom, 20) %&gt;% 
+  gt() %&gt;%
+  cols_label(
+    year = &quot;Year&quot;,
+    overall_pick = &quot;Overall Pick&quot;, 
+    team = &quot;Draft Team&quot;, 
+    player = &quot;Name&quot;, 
+    to_year = &quot;Last Year Played&quot;, 
+    amateur_team = &quot;Amateur Team&quot;, 
+    pspg = &quot;Career NHL Point Shares per Game&quot;, 
+    xpspg = &quot;Expected Career NHL Point Shares per Game&quot;, 
+    residualpspg = &quot;Difference&quot;
+   
+  ) %&gt;%
+  tab_header(
+    title = &quot;Biggest Busts Since 2010&quot;,
+    subtitle = &quot;Skaters Only&quot;
+  ) %&gt;%  
+  tab_source_note(
+    source_note = md(&quot;**By:** Jetson Ku  |  **Source:** [Hockey Reference](https://www.hockey-reference.com/) | Min. 41 Career GP to qualify&quot;)
+  ) %&gt;%
+    tab_style(
+    style = cell_text(color = &quot;black&quot;, weight = &quot;bold&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;title&quot;)
+  ) %&gt;% 
+  tab_style(
+    style = cell_text(color = &quot;black&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;subtitle&quot;)
+  ) %&gt;%
+  tab_style(
+     locations = cells_column_labels(columns = everything()),
+     style = list(
+       cell_borders(sides = &quot;bottom&quot;, weight = px(3)),
+       cell_text(weight = &quot;bold&quot;, size=12)
+     )
+   ) %&gt;%
+  opt_row_striping()</code></pre>
+<div id="atolzwjmiy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#atolzwjmiy .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#atolzwjmiy .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#atolzwjmiy .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#atolzwjmiy .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#atolzwjmiy .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#atolzwjmiy .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#atolzwjmiy .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#atolzwjmiy .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#atolzwjmiy .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#atolzwjmiy .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#atolzwjmiy .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#atolzwjmiy .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#atolzwjmiy .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#atolzwjmiy .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#atolzwjmiy .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#atolzwjmiy .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#atolzwjmiy .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#atolzwjmiy .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#atolzwjmiy .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#atolzwjmiy .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#atolzwjmiy .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#atolzwjmiy .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#atolzwjmiy .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#atolzwjmiy .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#atolzwjmiy .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#atolzwjmiy .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#atolzwjmiy .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#atolzwjmiy .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#atolzwjmiy .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#atolzwjmiy .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#atolzwjmiy .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#atolzwjmiy .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#atolzwjmiy .gt_left {
+  text-align: left;
+}
+
+#atolzwjmiy .gt_center {
+  text-align: center;
+}
+
+#atolzwjmiy .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#atolzwjmiy .gt_font_normal {
+  font-weight: normal;
+}
+
+#atolzwjmiy .gt_font_bold {
+  font-weight: bold;
+}
+
+#atolzwjmiy .gt_font_italic {
+  font-style: italic;
+}
+
+#atolzwjmiy .gt_super {
+  font-size: 65%;
+}
+
+#atolzwjmiy .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#atolzwjmiy .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#atolzwjmiy .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#atolzwjmiy .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#atolzwjmiy .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#atolzwjmiy .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#atolzwjmiy .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <td colspan="9" class="gt_heading gt_title gt_font_normal" style="color: #000000; text-align: left; font-weight: bold;">Biggest Busts Since 2010</td>
+    </tr>
+    <tr>
+      <td colspan="9" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="color: #000000; text-align: left;">Skaters Only</td>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Year">Year</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall Pick">Overall Pick</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Draft Team">Draft Team</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Name">Name</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year Played">Last Year Played</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Amateur Team">Amateur Team</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL Point Shares per Game">Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career NHL Point Shares per Game">Expected Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Difference">Difference</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="year" class="gt_row gt_right">2017</td>
+<td headers="overall_pick" class="gt_row gt_right">7</td>
+<td headers="team" class="gt_row gt_left">New York Rangers</td>
+<td headers="player" class="gt_row gt_left">Lias Andersson</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">HV71 </td>
+<td headers="pspg" class="gt_row gt_right">-0.005504587</td>
+<td headers="xpspg" class="gt_row gt_right">0.04488350</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.05038809</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2020</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">2</td>
+<td headers="team" class="gt_row gt_left gt_striped">Los Angeles Kings</td>
+<td headers="player" class="gt_row gt_left gt_striped">Quinton Byfield</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Sudbury Wolves </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.010869565</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.05986320</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.04899363</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2014</td>
+<td headers="overall_pick" class="gt_row gt_right">5</td>
+<td headers="team" class="gt_row gt_left">New York Islanders</td>
+<td headers="player" class="gt_row gt_left">Michael Dal Colle</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Oshawa Generals </td>
+<td headers="pspg" class="gt_row gt_right">0.006250000</td>
+<td headers="xpspg" class="gt_row gt_right">0.04890681</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.04265681</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2017</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">2</td>
+<td headers="team" class="gt_row gt_left gt_striped">Philadelphia Flyers</td>
+<td headers="player" class="gt_row gt_left gt_striped">Nolan Patrick</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Brandon Wheat Kings </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.018468468</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.05986320</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.04139473</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2017</td>
+<td headers="overall_pick" class="gt_row gt_right">24</td>
+<td headers="team" class="gt_row gt_left">Winnipeg Jets</td>
+<td headers="player" class="gt_row gt_left">Kristian Vesalainen</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Frolunda HC </td>
+<td headers="pspg" class="gt_row gt_right">-0.008571429</td>
+<td headers="xpspg" class="gt_row gt_right">0.03015036</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.03872179</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2012</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">1</td>
+<td headers="team" class="gt_row gt_left gt_striped">Edmonton Oilers</td>
+<td headers="player" class="gt_row gt_left gt_striped">Nail Yakupov</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2018</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Sarnia Sting </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.030571429</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.06815138</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.03757995</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2020</td>
+<td headers="overall_pick" class="gt_row gt_right">21</td>
+<td headers="team" class="gt_row gt_left">Columbus Blue Jackets</td>
+<td headers="player" class="gt_row gt_left">Yegor Chinakhov</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Omskie Yastreby </td>
+<td headers="pspg" class="gt_row gt_right">-0.004838710</td>
+<td headers="xpspg" class="gt_row gt_right">0.03174704</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.03658575</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2019</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">2</td>
+<td headers="team" class="gt_row gt_left gt_striped">New York Rangers</td>
+<td headers="player" class="gt_row gt_left gt_striped">Kaapo Kakko</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">TPS </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.024203822</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.05986320</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.03565937</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2019</td>
+<td headers="overall_pick" class="gt_row gt_right">3</td>
+<td headers="team" class="gt_row gt_left">Chicago Blackhawks</td>
+<td headers="player" class="gt_row gt_left">Kirby Dach</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Saskatoon Blades </td>
+<td headers="pspg" class="gt_row gt_right">0.019736842</td>
+<td headers="xpspg" class="gt_row gt_right">0.05501492</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.03527808</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2015</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">33</td>
+<td headers="team" class="gt_row gt_left gt_striped">Tampa Bay Lightning</td>
+<td headers="player" class="gt_row gt_left gt_striped">Mitchell Stephens</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Saginaw Spirit </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.008333333</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.02634250</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.03467584</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2016</td>
+<td headers="overall_pick" class="gt_row gt_right">12</td>
+<td headers="team" class="gt_row gt_left">New Jersey Devils</td>
+<td headers="player" class="gt_row gt_left">Michael McLeod</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Mississauga Steelheads </td>
+<td headers="pspg" class="gt_row gt_right">0.005555556</td>
+<td headers="xpspg" class="gt_row gt_right">0.03843855</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.03288299</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2012</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">29</td>
+<td headers="team" class="gt_row gt_left gt_striped">New Jersey Devils</td>
+<td headers="player" class="gt_row gt_left gt_striped">Stefan Matteau</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">USA U-18 Development Team </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.003260870</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.02788753</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.03114840</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2020</td>
+<td headers="overall_pick" class="gt_row gt_right">1</td>
+<td headers="team" class="gt_row gt_left">New York Rangers</td>
+<td headers="player" class="gt_row gt_left">Alexis Lafreniere</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Rimouski Oceanic </td>
+<td headers="pspg" class="gt_row gt_right">0.037037037</td>
+<td headers="xpspg" class="gt_row gt_right">0.06815138</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.03111435</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2014</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">30</td>
+<td headers="team" class="gt_row gt_left gt_striped">New Jersey Devils</td>
+<td headers="player" class="gt_row gt_left gt_striped">John Quenneville</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2020</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Brandon Wheat Kings </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.002380952</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.02748216</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.02986311</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2017</td>
+<td headers="overall_pick" class="gt_row gt_right">55</td>
+<td headers="team" class="gt_row gt_left">Vancouver Canucks</td>
+<td headers="player" class="gt_row gt_left">Jonah Gadjovich</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Owen Sound Attack </td>
+<td headers="pspg" class="gt_row gt_right">-0.009090909</td>
+<td headers="xpspg" class="gt_row gt_right">0.02023440</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.02932530</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2010</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">8</td>
+<td headers="team" class="gt_row gt_left gt_striped">Atlanta Thrashers</td>
+<td headers="player" class="gt_row gt_left gt_striped">Alexander Burmistrov</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2018</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Barrie Colts </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.014080460</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.04328682</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.02920636</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2010</td>
+<td headers="overall_pick" class="gt_row gt_right">3</td>
+<td headers="team" class="gt_row gt_left">Florida Panthers</td>
+<td headers="player" class="gt_row gt_left">Erik Gudbranson</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Kingston Frontenacs </td>
+<td headers="pspg" class="gt_row gt_right">0.025897036</td>
+<td headers="xpspg" class="gt_row gt_right">0.05501492</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.02911788</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2018</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">5</td>
+<td headers="team" class="gt_row gt_left gt_striped">Arizona Coyotes</td>
+<td headers="player" class="gt_row gt_left gt_striped">Barrett Hayton</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Soo Greyhounds </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.020212766</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.04890681</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.02869404</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2016</td>
+<td headers="overall_pick" class="gt_row gt_right">21</td>
+<td headers="team" class="gt_row gt_left">Carolina Hurricanes</td>
+<td headers="player" class="gt_row gt_left">Julien Gauthier</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Val-d'Or Foreurs </td>
+<td headers="pspg" class="gt_row gt_right">0.003125000</td>
+<td headers="xpspg" class="gt_row gt_right">0.03174704</td>
+<td headers="residualpspg" class="gt_row gt_right">-0.02862204</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2013</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">34</td>
+<td headers="team" class="gt_row gt_left gt_striped">Montreal Canadiens</td>
+<td headers="player" class="gt_row gt_left gt_striped">Jacob de La Rose</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2021</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Leksands IF </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">-0.001652893</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.02598554</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">-0.02763843</td></tr>
+  </tbody>
+  <tfoot class="gt_sourcenotes">
+    <tr>
+      <td class="gt_sourcenote" colspan="9"><strong>By:</strong> Jetson Ku  |  <strong>Source:</strong> <a href="https://www.hockey-reference.com/">Hockey Reference</a> | Min. 41 Career GP to qualify</td>
+    </tr>
+  </tfoot>
+  
+</table>
+</div>
+<p>Since 2010? Yikes Rangers. Also for as good as a team as the Devils are now, they whiffed on some picks in their day.</p>
+<pre class="r"><code>library(gt)
+bottom &lt;- draft_data %&gt;% 
+  arrange(desc(residualpspg)) %&gt;%
+  filter(position == &#39;G&#39;, games_played &gt; 41) %&gt;%
+  select(year, overall_pick, team, player, to_year, amateur_team, pspg, xpspg, residualpspg)
+head(bottom, 20) %&gt;% 
+  gt() %&gt;%
+  cols_label(
+    year = &quot;Year&quot;,
+    overall_pick = &quot;Overall Pick&quot;, 
+    team = &quot;Draft Team&quot;, 
+    player = &quot;Name&quot;, 
+    to_year = &quot;Last Year Played&quot;, 
+    amateur_team = &quot;Amateur Team&quot;, 
+    pspg = &quot;Career NHL Point Shares per Game&quot;, 
+    xpspg = &quot;Expected Career NHL Point Shares per Game&quot;, 
+    residualpspg = &quot;Difference&quot;
+   
+  ) %&gt;%
+  tab_header(
+    title = &quot;Biggest Gems&quot;,
+    subtitle = &quot;Goalies Only&quot;
+  ) %&gt;%  
+  tab_source_note(
+    source_note = md(&quot;**By:** Jetson Ku  |  **Source:** [Hockey Reference](https://www.hockey-reference.com/) | Min. 41 Career GP to qualify&quot;)
+  ) %&gt;%
+    tab_style(
+    style = cell_text(color = &quot;black&quot;, weight = &quot;bold&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;title&quot;)
+  ) %&gt;% 
+  tab_style(
+    style = cell_text(color = &quot;black&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;subtitle&quot;)
+  ) %&gt;%
+  tab_style(
+     locations = cells_column_labels(columns = everything()),
+     style = list(
+       cell_borders(sides = &quot;bottom&quot;, weight = px(3)),
+       cell_text(weight = &quot;bold&quot;, size=12)
+     )
+   ) %&gt;%
+  opt_row_striping()</code></pre>
+<div id="nbrxfchggv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#nbrxfchggv .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#nbrxfchggv .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#nbrxfchggv .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#nbrxfchggv .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#nbrxfchggv .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#nbrxfchggv .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#nbrxfchggv .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#nbrxfchggv .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#nbrxfchggv .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#nbrxfchggv .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#nbrxfchggv .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#nbrxfchggv .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#nbrxfchggv .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#nbrxfchggv .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#nbrxfchggv .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#nbrxfchggv .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#nbrxfchggv .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#nbrxfchggv .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#nbrxfchggv .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#nbrxfchggv .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#nbrxfchggv .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#nbrxfchggv .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#nbrxfchggv .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#nbrxfchggv .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#nbrxfchggv .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#nbrxfchggv .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#nbrxfchggv .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#nbrxfchggv .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#nbrxfchggv .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#nbrxfchggv .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#nbrxfchggv .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#nbrxfchggv .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#nbrxfchggv .gt_left {
+  text-align: left;
+}
+
+#nbrxfchggv .gt_center {
+  text-align: center;
+}
+
+#nbrxfchggv .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#nbrxfchggv .gt_font_normal {
+  font-weight: normal;
+}
+
+#nbrxfchggv .gt_font_bold {
+  font-weight: bold;
+}
+
+#nbrxfchggv .gt_font_italic {
+  font-style: italic;
+}
+
+#nbrxfchggv .gt_super {
+  font-size: 65%;
+}
+
+#nbrxfchggv .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#nbrxfchggv .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#nbrxfchggv .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#nbrxfchggv .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#nbrxfchggv .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#nbrxfchggv .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#nbrxfchggv .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <td colspan="9" class="gt_heading gt_title gt_font_normal" style="color: #000000; text-align: left; font-weight: bold;">Biggest Gems</td>
+    </tr>
+    <tr>
+      <td colspan="9" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="color: #000000; text-align: left;">Goalies Only</td>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Year">Year</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall Pick">Overall Pick</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Draft Team">Draft Team</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Name">Name</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year Played">Last Year Played</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Amateur Team">Amateur Team</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL Point Shares per Game">Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career NHL Point Shares per Game">Expected Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Difference">Difference</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="year" class="gt_row gt_right">2014</td>
+<td headers="overall_pick" class="gt_row gt_right">118</td>
+<td headers="team" class="gt_row gt_left">New York Rangers</td>
+<td headers="player" class="gt_row gt_left">Igor Shesterkin</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">MHK Spartak Moskva </td>
+<td headers="pspg" class="gt_row gt_right">0.2350000</td>
+<td headers="xpspg" class="gt_row gt_right">0.011106754</td>
+<td headers="residualpspg" class="gt_row gt_right">0.2238932</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1994</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">217</td>
+<td headers="team" class="gt_row gt_left gt_striped">Quebec Nordiques</td>
+<td headers="player" class="gt_row gt_left gt_striped">Tim Thomas</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2014</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Vermont </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.2178404</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.003822199</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.2140182</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1964</td>
+<td headers="overall_pick" class="gt_row gt_right">14</td>
+<td headers="team" class="gt_row gt_left">Boston Bruins</td>
+<td headers="player" class="gt_row gt_left">Ken Dryden</td>
+<td headers="to_year" class="gt_row gt_right">1979</td>
+<td headers="amateur_team" class="gt_row gt_left">Etobicoke </td>
+<td headers="pspg" class="gt_row gt_right">0.2483627</td>
+<td headers="xpspg" class="gt_row gt_right">0.036595315</td>
+<td headers="residualpspg" class="gt_row gt_right">0.2117674</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1983</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">199</td>
+<td headers="team" class="gt_row gt_left gt_striped">Chicago Blackhawks</td>
+<td headers="player" class="gt_row gt_left gt_striped">Dominik Hasek</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2008</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">TJ Pardubice </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.2133333</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.004857614</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.2084757</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2014</td>
+<td headers="overall_pick" class="gt_row gt_right">78</td>
+<td headers="team" class="gt_row gt_left">New York Islanders</td>
+<td headers="player" class="gt_row gt_left">Ilya Sorokin</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Metallurg Novokuznetsk </td>
+<td headers="pspg" class="gt_row gt_right">0.2162162</td>
+<td headers="xpspg" class="gt_row gt_right">0.016056797</td>
+<td headers="residualpspg" class="gt_row gt_right">0.2001594</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1994</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">226</td>
+<td headers="team" class="gt_row gt_left gt_striped">Montreal Canadiens</td>
+<td headers="player" class="gt_row gt_left gt_striped">Tomas Vokoun</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2013</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">HC Kladno </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.2032857</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.003336281</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1999494</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2000</td>
+<td headers="overall_pick" class="gt_row gt_right">205</td>
+<td headers="team" class="gt_row gt_left">New York Rangers</td>
+<td headers="player" class="gt_row gt_left">Henrik Lundqvist</td>
+<td headers="to_year" class="gt_row gt_right">2020</td>
+<td headers="amateur_team" class="gt_row gt_left">Vastra Frolunda HC Jr. </td>
+<td headers="pspg" class="gt_row gt_right">0.1953777</td>
+<td headers="xpspg" class="gt_row gt_right">0.004502420</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1908753</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2013</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">99</td>
+<td headers="team" class="gt_row gt_left gt_striped">Nashville Predators</td>
+<td headers="player" class="gt_row gt_left gt_striped">Juuse Saros</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">HPK Jr. </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.2018018</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.013206039</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1885958</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1999</td>
+<td headers="overall_pick" class="gt_row gt_right">138</td>
+<td headers="team" class="gt_row gt_left">Buffalo Sabres</td>
+<td headers="player" class="gt_row gt_left">Ryan Miller</td>
+<td headers="to_year" class="gt_row gt_right">2021</td>
+<td headers="amateur_team" class="gt_row gt_left">Soo Indians </td>
+<td headers="pspg" class="gt_row gt_right">0.1905779</td>
+<td headers="xpspg" class="gt_row gt_right">0.009234607</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1813433</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2012</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">130</td>
+<td headers="team" class="gt_row gt_left gt_striped">Winnipeg Jets</td>
+<td headers="player" class="gt_row gt_left gt_striped">Connor Hellebuyck</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Odessa Jackalopes </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1905512</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.009948689</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1806025</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">1987</td>
+<td headers="overall_pick" class="gt_row gt_right">159</td>
+<td headers="team" class="gt_row gt_left">St. Louis Blues</td>
+<td headers="player" class="gt_row gt_left">Guy Hebert</td>
+<td headers="to_year" class="gt_row gt_right">2001</td>
+<td headers="amateur_team" class="gt_row gt_left">Hamilton </td>
+<td headers="pspg" class="gt_row gt_right">0.1879837</td>
+<td headers="xpspg" class="gt_row gt_right">0.007540845</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1804429</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2004</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">258</td>
+<td headers="team" class="gt_row gt_left gt_striped">Nashville Predators</td>
+<td headers="player" class="gt_row gt_left gt_striped">Pekka Rinne</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2021</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Karpat </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1812592</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.001752838</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1795063</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2010</td>
+<td headers="overall_pick" class="gt_row gt_right">187</td>
+<td headers="team" class="gt_row gt_left">Carolina Hurricanes</td>
+<td headers="player" class="gt_row gt_left">Frederik Andersen</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Frederikshavn </td>
+<td headers="pspg" class="gt_row gt_right">0.1849438</td>
+<td headers="xpspg" class="gt_row gt_right">0.005601314</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1793425</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2001</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">232</td>
+<td headers="team" class="gt_row gt_left gt_striped">Anaheim Ducks</td>
+<td headers="player" class="gt_row gt_left gt_striped">Martin Gerber</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2011</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">SC Langnau </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1820961</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.003022971</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1790731</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2003</td>
+<td headers="overall_pick" class="gt_row gt_right">271</td>
+<td headers="team" class="gt_row gt_left">Montreal Canadiens</td>
+<td headers="player" class="gt_row gt_left">Jaroslav Halak</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">HC Slovan Bratislava Jr. </td>
+<td headers="pspg" class="gt_row gt_right">0.1789568</td>
+<td headers="xpspg" class="gt_row gt_right">0.001165025</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1777918</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">1997</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">161</td>
+<td headers="team" class="gt_row gt_left gt_striped">Colorado Avalanche</td>
+<td headers="player" class="gt_row gt_left gt_striped">David Aebischer</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2008</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">HC Fribourg-Gotteron </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1827103</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.007391377</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1753189</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2009</td>
+<td headers="overall_pick" class="gt_row gt_right">161</td>
+<td headers="team" class="gt_row gt_left">Minnesota Wild</td>
+<td headers="player" class="gt_row gt_left">Darcy Kuemper</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Red Deer Rebels </td>
+<td headers="pspg" class="gt_row gt_right">0.1826087</td>
+<td headers="xpspg" class="gt_row gt_right">0.007391377</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1752173</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2017</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">111</td>
+<td headers="team" class="gt_row gt_left gt_striped">Boston Bruins</td>
+<td headers="player" class="gt_row gt_left gt_striped">Jeremy Swayman</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Sioux Falls Stampede </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1862745</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.011837997</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1744365</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2001</td>
+<td headers="overall_pick" class="gt_row gt_right">214</td>
+<td headers="team" class="gt_row gt_left">Los Angeles Kings</td>
+<td headers="player" class="gt_row gt_left">Cristobal Huet</td>
+<td headers="to_year" class="gt_row gt_right">2010</td>
+<td headers="amateur_team" class="gt_row gt_left">HC Lugano </td>
+<td headers="pspg" class="gt_row gt_right">0.1772059</td>
+<td headers="xpspg" class="gt_row gt_right">0.003988661</td>
+<td headers="residualpspg" class="gt_row gt_right">0.1732172</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2000</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">171</td>
+<td headers="team" class="gt_row gt_left gt_striped">Philadelphia Flyers</td>
+<td headers="player" class="gt_row gt_left gt_striped">Roman Cechmanek</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2004</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">HC Vsetin </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.1797170</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.006670838</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.1730461</td></tr>
+  </tbody>
+  <tfoot class="gt_sourcenotes">
+    <tr>
+      <td class="gt_sourcenote" colspan="9"><strong>By:</strong> Jetson Ku  |  <strong>Source:</strong> <a href="https://www.hockey-reference.com/">Hockey Reference</a> | Min. 41 Career GP to qualify</td>
+    </tr>
+  </tfoot>
+  
+</table>
+</div>
+<p>Well here’s something for the Rangers. No real surprises here. Some legends are on this list. I don’t see Braden Holtby though.</p>
+<pre class="r"><code>library(gt)
+top &lt;- draft_data %&gt;% 
+  arrange(desc(residualpspg)) %&gt;%
+  filter(position != &#39;G&#39;, games_played &gt; 41, year &gt; 2017) %&gt;%
+  select(year, overall_pick, team, player, to_year, amateur_team, pspg, xpspg, residualpspg)
+head(top, 20) %&gt;% 
+  gt() %&gt;%
+  cols_label(
+    year = &quot;Year&quot;,
+    overall_pick = &quot;Overall Pick&quot;, 
+    team = &quot;Draft Team&quot;, 
+    player = &quot;Name&quot;, 
+    to_year = &quot;Last Year Played&quot;, 
+    amateur_team = &quot;Amateur Team&quot;, 
+    pspg = &quot;Career NHL Point Shares per Game&quot;, 
+    xpspg = &quot;Expected Career NHL Point Shares per Game&quot;, 
+    residualpspg = &quot;Difference&quot;
+   
+  ) %&gt;%
+  tab_header(
+    title = &quot;Biggest Gems Since 2018&quot;,
+    subtitle = &quot;Skaters Only&quot;
+  ) %&gt;%  
+  tab_source_note(
+    source_note = md(&quot;**By:** Jetson Ku  |  **Source:** [Hockey Reference](https://www.hockey-reference.com/) | Min. 41 Career GP to qualify&quot;)
+  ) %&gt;%
+    tab_style(
+    style = cell_text(color = &quot;black&quot;, weight = &quot;bold&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;title&quot;)
+  ) %&gt;% 
+  tab_style(
+    style = cell_text(color = &quot;black&quot;, align = &quot;left&quot;),
+    locations = cells_title(&quot;subtitle&quot;)
+  ) %&gt;%
+  tab_style(
+     locations = cells_column_labels(columns = everything()),
+     style = list(
+       cell_borders(sides = &quot;bottom&quot;, weight = px(3)),
+       cell_text(weight = &quot;bold&quot;, size=12)
+     )
+   ) %&gt;%
+  opt_row_striping()</code></pre>
+<div id="eppivdlsnp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#eppivdlsnp .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#eppivdlsnp .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#eppivdlsnp .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#eppivdlsnp .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#eppivdlsnp .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#eppivdlsnp .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#eppivdlsnp .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#eppivdlsnp .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#eppivdlsnp .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#eppivdlsnp .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#eppivdlsnp .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#eppivdlsnp .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#eppivdlsnp .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#eppivdlsnp .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#eppivdlsnp .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#eppivdlsnp .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#eppivdlsnp .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#eppivdlsnp .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#eppivdlsnp .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#eppivdlsnp .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#eppivdlsnp .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#eppivdlsnp .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#eppivdlsnp .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#eppivdlsnp .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#eppivdlsnp .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#eppivdlsnp .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#eppivdlsnp .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#eppivdlsnp .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#eppivdlsnp .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#eppivdlsnp .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#eppivdlsnp .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#eppivdlsnp .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#eppivdlsnp .gt_left {
+  text-align: left;
+}
+
+#eppivdlsnp .gt_center {
+  text-align: center;
+}
+
+#eppivdlsnp .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#eppivdlsnp .gt_font_normal {
+  font-weight: normal;
+}
+
+#eppivdlsnp .gt_font_bold {
+  font-weight: bold;
+}
+
+#eppivdlsnp .gt_font_italic {
+  font-style: italic;
+}
+
+#eppivdlsnp .gt_super {
+  font-size: 65%;
+}
+
+#eppivdlsnp .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#eppivdlsnp .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#eppivdlsnp .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#eppivdlsnp .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#eppivdlsnp .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#eppivdlsnp .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#eppivdlsnp .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <td colspan="9" class="gt_heading gt_title gt_font_normal" style="color: #000000; text-align: left; font-weight: bold;">Biggest Gems Since 2018</td>
+    </tr>
+    <tr>
+      <td colspan="9" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="color: #000000; text-align: left;">Skaters Only</td>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Year">Year</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall Pick">Overall Pick</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Draft Team">Draft Team</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Name">Name</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year Played">Last Year Played</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Amateur Team">Amateur Team</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL Point Shares per Game">Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career NHL Point Shares per Game">Expected Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Difference">Difference</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="year" class="gt_row gt_right">2018</td>
+<td headers="overall_pick" class="gt_row gt_right">7</td>
+<td headers="team" class="gt_row gt_left">Vancouver Canucks</td>
+<td headers="player" class="gt_row gt_left">Quinn Hughes</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Michigan </td>
+<td headers="pspg" class="gt_row gt_right">0.10341463</td>
+<td headers="xpspg" class="gt_row gt_right">0.04488350</td>
+<td headers="residualpspg" class="gt_row gt_right">0.05853113</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2019</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">12</td>
+<td headers="team" class="gt_row gt_left gt_striped">Minnesota Wild</td>
+<td headers="player" class="gt_row gt_left gt_striped">Matthew Boldy</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">USA U-18 Development Team </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.09148936</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.03843855</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.05305082</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2018</td>
+<td headers="overall_pick" class="gt_row gt_right">141</td>
+<td headers="team" class="gt_row gt_left">New Jersey Devils</td>
+<td headers="player" class="gt_row gt_left">Yegor Sharangovich</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Dinamo Minsk </td>
+<td headers="pspg" class="gt_row gt_right">0.05538462</td>
+<td headers="xpspg" class="gt_row gt_right">0.00897745</td>
+<td headers="residualpspg" class="gt_row gt_right">0.04640717</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2018</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">22</td>
+<td headers="team" class="gt_row gt_left gt_striped">New York Rangers</td>
+<td headers="player" class="gt_row gt_left gt_striped">K'Andre Miller</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">USA U-18 Development Team </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.07111111</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.03119078</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.03992033</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2018</td>
+<td headers="overall_pick" class="gt_row gt_right">12</td>
+<td headers="team" class="gt_row gt_left">New York Islanders</td>
+<td headers="player" class="gt_row gt_left">Noah Dobson</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Acadie-Bathurst Titan </td>
+<td headers="pspg" class="gt_row gt_right">0.07812500</td>
+<td headers="xpspg" class="gt_row gt_right">0.03843855</td>
+<td headers="residualpspg" class="gt_row gt_right">0.03968645</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2020</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">12</td>
+<td headers="team" class="gt_row gt_left gt_striped">Florida Panthers</td>
+<td headers="player" class="gt_row gt_left gt_striped">Anton Lundell</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">HIFK </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.07692308</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.03843855</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.03848453</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2018</td>
+<td headers="overall_pick" class="gt_row gt_right">52</td>
+<td headers="team" class="gt_row gt_left">Toronto Maple Leafs</td>
+<td headers="player" class="gt_row gt_left">Sean Durzi</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Owen Sound Attack </td>
+<td headers="pspg" class="gt_row gt_right">0.05625000</td>
+<td headers="xpspg" class="gt_row gt_right">0.02090508</td>
+<td headers="residualpspg" class="gt_row gt_right">0.03534492</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2019</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">6</td>
+<td headers="team" class="gt_row gt_left gt_striped">Detroit Red Wings</td>
+<td headers="player" class="gt_row gt_left gt_striped">Moritz Seider</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Adler Mannheim </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.08170732</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.04672673</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.03498059</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2018</td>
+<td headers="overall_pick" class="gt_row gt_right">10</td>
+<td headers="team" class="gt_row gt_left">Edmonton Oilers</td>
+<td headers="player" class="gt_row gt_left">Evan Bouchard</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">London Knights </td>
+<td headers="pspg" class="gt_row gt_right">0.07450980</td>
+<td headers="xpspg" class="gt_row gt_right">0.04061862</td>
+<td headers="residualpspg" class="gt_row gt_right">0.03389118</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2018</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">46</td>
+<td headers="team" class="gt_row gt_left gt_striped">Washington Capitals</td>
+<td headers="player" class="gt_row gt_left gt_striped">Martin Fehervary</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">IK Oskarshamn </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.05529412</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.02237107</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.03292305</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2021</td>
+<td headers="overall_pick" class="gt_row gt_right">60</td>
+<td headers="team" class="gt_row gt_left">Arizona Coyotes</td>
+<td headers="player" class="gt_row gt_left">Janis Moser</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">EHC Biel-Bienne </td>
+<td headers="pspg" class="gt_row gt_right">0.04651163</td>
+<td headers="xpspg" class="gt_row gt_right">0.01919397</td>
+<td headers="residualpspg" class="gt_row gt_right">0.02731766</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2019</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">9</td>
+<td headers="team" class="gt_row gt_left gt_striped">Anaheim Ducks</td>
+<td headers="player" class="gt_row gt_left gt_striped">Trevor Zegras</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">USA U-18 Development Team </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.06868687</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.04187845</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.02680842</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2020</td>
+<td headers="overall_pick" class="gt_row gt_right">13</td>
+<td headers="team" class="gt_row gt_left">Carolina Hurricanes</td>
+<td headers="player" class="gt_row gt_left">Seth Jarvis</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Portland Winterhawks </td>
+<td headers="pspg" class="gt_row gt_right">0.06323529</td>
+<td headers="xpspg" class="gt_row gt_right">0.03748145</td>
+<td headers="residualpspg" class="gt_row gt_right">0.02575385</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2020</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">19</td>
+<td headers="team" class="gt_row gt_left gt_striped">New York Rangers</td>
+<td headers="player" class="gt_row gt_left gt_striped">Braden Schneider</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Brandon Wheat Kings </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.05581395</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.03294377</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.02287019</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2018</td>
+<td headers="overall_pick" class="gt_row gt_right">29</td>
+<td headers="team" class="gt_row gt_left">Toronto Maple Leafs</td>
+<td headers="player" class="gt_row gt_left">Rasmus Sandin</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">Soo Greyhounds </td>
+<td headers="pspg" class="gt_row gt_right">0.05000000</td>
+<td headers="xpspg" class="gt_row gt_right">0.02788753</td>
+<td headers="residualpspg" class="gt_row gt_right">0.02211247</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2018</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">2</td>
+<td headers="team" class="gt_row gt_left gt_striped">Carolina Hurricanes</td>
+<td headers="player" class="gt_row gt_left gt_striped">Andrei Svechnikov</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Barrie Colts </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.08162544</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.05986320</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.02176225</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2019</td>
+<td headers="overall_pick" class="gt_row gt_right">15</td>
+<td headers="team" class="gt_row gt_left">Montreal Canadiens</td>
+<td headers="player" class="gt_row gt_left">Cole Caufield</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">USA U-18 Development Team </td>
+<td headers="pspg" class="gt_row gt_right">0.05714286</td>
+<td headers="xpspg" class="gt_row gt_right">0.03577034</td>
+<td headers="residualpspg" class="gt_row gt_right">0.02137251</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2019</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">4</td>
+<td headers="team" class="gt_row gt_left gt_striped">Colorado Avalanche</td>
+<td headers="player" class="gt_row gt_left gt_striped">Bowen Byram</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Vancouver Giants </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.06938776</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.05157501</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.01781275</td></tr>
+    <tr><td headers="year" class="gt_row gt_right">2018</td>
+<td headers="overall_pick" class="gt_row gt_right">14</td>
+<td headers="team" class="gt_row gt_left">Philadelphia Flyers</td>
+<td headers="player" class="gt_row gt_left">Joel Farabee</td>
+<td headers="to_year" class="gt_row gt_right">2022</td>
+<td headers="amateur_team" class="gt_row gt_left">USA U-18 Development Team </td>
+<td headers="pspg" class="gt_row gt_right">0.05352941</td>
+<td headers="xpspg" class="gt_row gt_right">0.03659532</td>
+<td headers="residualpspg" class="gt_row gt_right">0.01693410</td></tr>
+    <tr><td headers="year" class="gt_row gt_right gt_striped">2018</td>
+<td headers="overall_pick" class="gt_row gt_right gt_striped">4</td>
+<td headers="team" class="gt_row gt_left gt_striped">Ottawa Senators</td>
+<td headers="player" class="gt_row gt_left gt_striped">Brady Tkachuk</td>
+<td headers="to_year" class="gt_row gt_right gt_striped">2022</td>
+<td headers="amateur_team" class="gt_row gt_left gt_striped">Boston University </td>
+<td headers="pspg" class="gt_row gt_right gt_striped">0.06714801</td>
+<td headers="xpspg" class="gt_row gt_right gt_striped">0.05157501</td>
+<td headers="residualpspg" class="gt_row gt_right gt_striped">0.01557300</td></tr>
+  </tbody>
+  <tfoot class="gt_sourcenotes">
+    <tr>
+      <td class="gt_sourcenote" colspan="9"><strong>By:</strong> Jetson Ku  |  <strong>Source:</strong> <a href="https://www.hockey-reference.com/">Hockey Reference</a> | Min. 41 Career GP to qualify</td>
+    </tr>
+  </tfoot>
+  
+</table>
+</div>
+<p>Fehervary’s on there! As a guy who doesn’t put up points like some of the other elite scorers on this table, it’s cool to see that Point Shares has him as a gem, even though his game is somewhat hard to quantify as a shutdown defenseman.</p>
+<p>Lastly, I’m going to look at the probability of each pick being an “NHLer”. Someone who plays 243 career games (3 seasons) is someone who has stuck in the league long enough for us to consider them a successful NHLer. I’m going to fit a curve to this and generate a table telling me the probability for each pick. I’m also including the expected PSPG at each position. By combining these, we get an expected value for PSPG. (If the probability of making it is low and the impact is low, the pick is worth less).</p>
+<pre class="r"><code>draft_data &lt;- draft_data %&gt;% mutate(is_nhler = (games_played &gt; 243))
+by_overall &lt;- draft_data %&gt;% group_by(overall_pick) %&gt;% summarise(count=n(), nhlers=sum(is_nhler))
+by_overall &lt;- by_overall %&gt;% mutate(probability = 100*nhlers/count)
+ggplot(by_overall, aes(x=overall_pick, y=probability)) + 
+  geom_point(col = &#39;blue&#39;) + 
+  stat_smooth(method=&quot;lm&quot;, formula=y ~ log(x),colour=&quot;blue&quot;)</code></pre>
+<p><img src="https://jetsonku.github.io/sportsdatablog/2022/12/05/nhl-draft-pick-value/index_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<pre class="r"><code>fit &lt;- lm(probability ~ log(overall_pick), data=by_overall)
+pred_prob &lt;- fit %&gt;% predict(by_overall)
+by_overall &lt;- by_overall %&gt;% mutate(xprobability = pred_prob)
+fit &lt;- lm(mean_pspg ~ log(overall_pick), data=gp)
+pred_pspg &lt;- fit %&gt;% predict(by_overall)
+by_overall &lt;- by_overall %&gt;% mutate(xpspg = pred_pspg)
+by_overall &lt;- by_overall %&gt;% mutate(evpspg = xpspg*(xprobability/100))</code></pre>
+</div>
+<div id="hindsight-is-2020" class="section level2">
+<h2>Hindsight is 20/20</h2>
+<p>Now that we have these probabilities, what if we use them to evaluate pick swaps? I’m looking at two draft day trades in recent memory, both of which involve Washington. The first is in 2020:</p>
+<div id="calgary-trades-19th-overall-pick-to-rangers-for-22nd-72nd-overall-picks-calgary-trades-22nd-overall-pick-to-washington-for-24th-80th-overall-picks" class="section level3">
+<h3>2020 - Calgary trades 19th overall pick to Rangers for 22nd &amp; 72nd overall picks; Calgary trades 22nd overall pick to Washington for 24th &amp; 80th overall picks</h3>
+<p>Calgary gets: <span style="color: green;">24th, 72nd, 80th picks</span> = 0.01118422+0.003559693+0.003051762 = 0.01779568 ePSPG</p>
+<p>Calgary gives: <span style="color: red;">19th</span> = 0.01335337 = 0.01335337 ePSPG</p>
+<p>Rangers get: <span style="color: green;">19th</span> = 0.01335337 = 0.01335337 ePSPG</p>
+<p>Rangers give: <span style="color: red;">22nd, 72nd</span> = 0.01196968+0.003559693 = 0.01552937 ePSPG</p>
+<p>Washington gets: <span style="color: green;">22nd</span> = 0.01196968 = 0.01196968 ePSPG</p>
+<p>Washington gives: <span style="color: red;">24th, 80th</span> = 0.01118422+0.003051762 = 0.01423598 ePSPG</p>
+<p>Calgary added 0.00444231 expected PSPG to their franchise assets.</p>
+<p>Rangers took -0.002176 expected PSPG out of their franchise assets.</p>
+<p>Washington took -0.0022663 expected PSPG out of their franchise assets.</p>
+<p>Based on our probabilities, Calgary wins this trade and Washington loses. Now let’s look at who really <em>won</em> the trade.</p>
+<p>Calgary gets: Connor Zary, Jeremy Poirer, Jake Boltmann</p>
+<p>Calgary gives: Braden Schneider</p>
+<p>Rangers get: Braden Schneider</p>
+<p>Rangers give: Hendrix Lapierre, Jeremy Poirer</p>
+<p>Washington gets: Hendrix Lapierre</p>
+<p>Washington gives: Connor Zary, Jake Boltmann</p>
+<p>Zary and Poirer are legit prospects. Schneider is a full time NHLer now, albeit not an elite one. He’s 70/243 games down. Lapierre is right on the edge of the Capitals’ roster, but still needs time to develop. Out of all the players involved, Schneider looks to be the best asset, which is appropriate given that he was the highest pick. Based on the return, I’m going to give this trade to Calgary. I think their haul has the most upside, but the Rangers definitely didn’t get fleeced. Jury’s still out on Lapierre. I think one problem with these probabilities is that there’s too much parity. It seems like there isn’t much of an increase in value when moving up the board. It’s also a bit of a self-selecting sample. Teams are likely to move up for prospects they are passionate about, which makes it more likely for that prospect to succeed. The point of the probabilities though is to evaluate the trade WITHOUT using hindsight. I do think the math works here and that Calgary got the best value.</p>
+</div>
+<div id="washington-trades-26th-overall-pick-to-st.-louis-for-28th-87th-overall-picks" class="section level3">
+<h3>2016 - Washington trades 26th overall pick to St. Louis for 28th &amp; 87th overall picks</h3>
+<p>St. Louis gets: <span style="color: green;">26th</span> = 0.0104852 = 0.0104852 ePSPG</p>
+<p>St. Louis gives: <span style="color: red;">28th, 87th</span> = 0.009858123+0.002675321 = 0.01253344 ePSPG</p>
+<p>Washington gets: <span style="color: green;">28th, 87th</span> = 0.009858123+0.002675321 = 0.01253344 ePSPG</p>
+<p>Washington gives: <span style="color: red;">26th</span> = 0.0104852 = 0.0104852 ePSPG</p>
+<p>St. Louis took 0.00204824 expected PSPG out of their franchise assets.</p>
+<p>Washington added 0.00204824 expected PSPG to their franchise assets.</p>
+<p>Welp.</p>
+<p>St. Louis gets: Tage Thompson</p>
+<p>St. Louis gives: Lucas Johansen, Garrett Pilon</p>
+<p>Washington gets: Lucas Johansen, Garrett Pilon</p>
+<p>Washington gives: Tage Thompson</p>
+<p>This looks worse than it is, I promise. OK I don’t promise. Fundamentally, the trade wasn’t bad. The selections… could have been… different. Tage Thompson has 34 points in 25 games so far this season and is lighting the league up with Buffalo. He didn’t quite pan out in St. Louis, but he was part of the package that landed them their captain, Ryan O’Reilly. Johansen and Pilon seem to be stuck in the minors with no clear path ahead of them.</p>
+<p>In defense of the math: Two NHL All Stars were picked in the next 11 picks. There were still elite players on the board. If Washington hits on one of them, this trade looks great for them. At 87, there are still some useful pieces on the board, and Garrett Pilon has pushed the Caps’ roster several times, playing 3 games in his career so far. If Johansen isn’t the pick here, I think hindsight aligns with the math.</p>
+</div>
+<div id="our-conclusion" class="section level3">
+<h3>Our conclusion?</h3>
+<p>Trading up is never worth it? No. That’s not the takeaway. If you trust in your scouting department, which I imagine most front offices do, you trade up if you need to. The evidence <em>does</em> point to the fact that more picks are more important than high picks though. I think this does allude to an interesting element of human error, in which we believe so confidently in our ability to draft prospects that we decide we don’t need more picks. In fact, simple probability says you should collect as many picks as possible. As some hockey player once said “You miss 100% of the shots you don’t take”.</p>
+</div>
+</div>
+</div>
+
+    </div>
+  </article>
+
+  
+
+
+</main>
+
+      <footer class="footer">
+        <ul class="footer-links">
+          <li>
+            <a href="/sportsdatablog/index.xml" type="application/rss+xml" target="_blank">RSS feed</a>
+          </li>
+          <li>
+            <a href="https://gohugo.io/" class="footer-links-kudos">Made with <img src="/sportsdatablog/images/hugo-logo.png" alt="Img link to Hugo website" width="22" height="22"></a>
+          </li>
+        </ul>
+      </footer>
+
+    </div>
+    
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/r.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/yaml.min.js"></script>
+<script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+    
+  </body>
+</html>
+

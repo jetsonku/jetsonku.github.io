@@ -2,22 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://jetsonku.github.io/sportsdatablog/</loc>
+    <lastmod>2022-12-05T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://jetsonku.github.io/sportsdatablog/2022/12/05/nhl-draft-pick-value/</loc>
+    <lastmod>2022-12-05T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://jetsonku.github.io/sportsdatablog/post/</loc>
+    <lastmod>2022-12-05T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://jetsonku.github.io/sportsdatablog/tags/big-ten/</loc>
     <lastmod>2022-11-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://jetsonku.github.io/sportsdatablog/categories/</loc>
     <lastmod>2022-11-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://jetsonku.github.io/sportsdatablog/</loc>
-    <lastmod>2022-11-15T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://jetsonku.github.io/sportsdatablog/tags/ncaa/</loc>
     <lastmod>2022-11-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://jetsonku.github.io/sportsdatablog/tags/plot/</loc>
-    <lastmod>2022-11-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://jetsonku.github.io/sportsdatablog/post/</loc>
     <lastmod>2022-11-15T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://jetsonku.github.io/sportsdatablog/categories/r/</loc>

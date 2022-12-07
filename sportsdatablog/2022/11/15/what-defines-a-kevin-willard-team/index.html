@@ -323,9 +323,8 @@ wss_values &lt;- map_dbl(k.values, wss)</code></pre>
        ylab=&quot;Total within-clusters sum of squares&quot;)</code></pre>
 <p><img src="https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/index_files/figure-html/unnamed-chunk-14-1.png" width="672" />
 I’m going to use 6 clusters.</p>
-<pre class="r"><code>k6 &lt;- kmeans(teamsscaled, centers = 6, nstart = 25)</code></pre>
-<pre><code>## Warning: did not converge in 10 iterations</code></pre>
-<pre class="r"><code>k6</code></pre>
+<pre class="r"><code>k6 &lt;- kmeans(teamsscaled, centers = 6, nstart = 25)
+k6</code></pre>
 <pre><code>## K-means clustering with 6 clusters of sizes 782, 651, 416, 584, 626, 781
 ## 
 ## Cluster means:
