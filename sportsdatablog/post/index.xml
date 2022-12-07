@@ -6,7 +6,16 @@
     <description>Recent content in Posts on Jetson&#39;s Sports Data Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 15 Nov 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 05 Dec 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://jetsonku.github.io/sportsdatablog/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>NHL Draft Pick Value</title>
+      <link>https://jetsonku.github.io/sportsdatablog/2022/12/05/nhl-draft-pick-value/</link>
+      <pubDate>Mon, 05 Dec 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://jetsonku.github.io/sportsdatablog/2022/12/05/nhl-draft-pick-value/</guid>
+      <description>What makes a fair trade for a first overall pick? Analysis of NHL Entry Draft Pick Values in TradeBased on the position a player is drafted in, we can forecast their probability of making the NHL without knowing anything else about them, as long as we have multiple years of draft data. Thankfully this is something that we do have access to. I found a data file on kaggle where it has draft selections for the past 60-ish years along with their career statistics in the NHL.</description>
+    </item>
+    
     <item>
       <title>What Defines a Kevin Willard Team?</title>
       <link>https://jetsonku.github.io/sportsdatablog/2022/11/15/what-defines-a-kevin-willard-team/</link>
