@@ -45,7 +45,7 @@ img {
 }
 
 div.main-container {
-  max-width: 1600px !important;
+  max-width: 80% !important;
 }
 
 .header {
