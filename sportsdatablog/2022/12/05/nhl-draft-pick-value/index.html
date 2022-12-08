@@ -312,13 +312,13 @@ head(top, 20) %&gt;%
   gt() %&gt;%
   cols_label(
     year = &quot;Year&quot;,
-    overall_pick = &quot;Overall Pick&quot;, 
+    overall_pick = &quot;Overall&quot;, 
     team = &quot;Draft Team&quot;, 
     player = &quot;Name&quot;, 
-    to_year = &quot;Last Year Played&quot;, 
+    to_year = &quot;Last Year&quot;, 
     amateur_team = &quot;Amateur Team&quot;, 
-    pspg = &quot;Career NHL Point Shares per Game&quot;, 
-    xpspg = &quot;Expected Career NHL Point Shares per Game&quot;, 
+    pspg = &quot;Career NHL PSPG&quot;, 
+    xpspg = &quot;Expected Career PSPG&quot;, 
     residualpspg = &quot;Difference&quot;
    
   ) %&gt;%
@@ -345,12 +345,12 @@ head(top, 20) %&gt;%
      )
    ) %&gt;%
   opt_row_striping()</code></pre>
-<div id="hjrofiemzj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="zwvvxwhuna" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#hjrofiemzj .gt_table {
+#zwvvxwhuna .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -375,7 +375,7 @@ head(top, 20) %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#hjrofiemzj .gt_heading {
+#zwvvxwhuna .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -387,12 +387,12 @@ head(top, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#hjrofiemzj .gt_caption {
+#zwvvxwhuna .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#hjrofiemzj .gt_title {
+#zwvvxwhuna .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -404,7 +404,7 @@ head(top, 20) %&gt;%
   border-bottom-width: 0;
 }
 
-#hjrofiemzj .gt_subtitle {
+#zwvvxwhuna .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -416,13 +416,13 @@ head(top, 20) %&gt;%
   border-top-width: 0;
 }
 
-#hjrofiemzj .gt_bottom_border {
+#zwvvxwhuna .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#hjrofiemzj .gt_col_headings {
+#zwvvxwhuna .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -437,7 +437,7 @@ head(top, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#hjrofiemzj .gt_col_heading {
+#zwvvxwhuna .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -457,7 +457,7 @@ head(top, 20) %&gt;%
   overflow-x: hidden;
 }
 
-#hjrofiemzj .gt_column_spanner_outer {
+#zwvvxwhuna .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -469,15 +469,15 @@ head(top, 20) %&gt;%
   padding-right: 4px;
 }
 
-#hjrofiemzj .gt_column_spanner_outer:first-child {
+#zwvvxwhuna .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#hjrofiemzj .gt_column_spanner_outer:last-child {
+#zwvvxwhuna .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#hjrofiemzj .gt_column_spanner {
+#zwvvxwhuna .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -489,7 +489,7 @@ head(top, 20) %&gt;%
   width: 100%;
 }
 
-#hjrofiemzj .gt_group_heading {
+#zwvvxwhuna .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -515,7 +515,7 @@ head(top, 20) %&gt;%
   text-align: left;
 }
 
-#hjrofiemzj .gt_empty_group_heading {
+#zwvvxwhuna .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -530,15 +530,15 @@ head(top, 20) %&gt;%
   vertical-align: middle;
 }
 
-#hjrofiemzj .gt_from_md > :first-child {
+#zwvvxwhuna .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#hjrofiemzj .gt_from_md > :last-child {
+#zwvvxwhuna .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#hjrofiemzj .gt_row {
+#zwvvxwhuna .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -557,7 +557,7 @@ head(top, 20) %&gt;%
   overflow-x: hidden;
 }
 
-#hjrofiemzj .gt_stub {
+#zwvvxwhuna .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -570,7 +570,7 @@ head(top, 20) %&gt;%
   padding-right: 5px;
 }
 
-#hjrofiemzj .gt_stub_row_group {
+#zwvvxwhuna .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -584,11 +584,11 @@ head(top, 20) %&gt;%
   vertical-align: top;
 }
 
-#hjrofiemzj .gt_row_group_first td {
+#zwvvxwhuna .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#hjrofiemzj .gt_summary_row {
+#zwvvxwhuna .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -598,16 +598,16 @@ head(top, 20) %&gt;%
   padding-right: 5px;
 }
 
-#hjrofiemzj .gt_first_summary_row {
+#zwvvxwhuna .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#hjrofiemzj .gt_first_summary_row.thick {
+#zwvvxwhuna .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#hjrofiemzj .gt_last_summary_row {
+#zwvvxwhuna .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -617,7 +617,7 @@ head(top, 20) %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#hjrofiemzj .gt_grand_summary_row {
+#zwvvxwhuna .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -627,7 +627,7 @@ head(top, 20) %&gt;%
   padding-right: 5px;
 }
 
-#hjrofiemzj .gt_first_grand_summary_row {
+#zwvvxwhuna .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -637,11 +637,11 @@ head(top, 20) %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#hjrofiemzj .gt_striped {
+#zwvvxwhuna .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#hjrofiemzj .gt_table_body {
+#zwvvxwhuna .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -650,7 +650,7 @@ head(top, 20) %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#hjrofiemzj .gt_footnotes {
+#zwvvxwhuna .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -664,7 +664,7 @@ head(top, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#hjrofiemzj .gt_footnote {
+#zwvvxwhuna .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -673,7 +673,7 @@ head(top, 20) %&gt;%
   padding-right: 5px;
 }
 
-#hjrofiemzj .gt_sourcenotes {
+#zwvvxwhuna .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -687,7 +687,7 @@ head(top, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#hjrofiemzj .gt_sourcenote {
+#zwvvxwhuna .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -695,64 +695,64 @@ head(top, 20) %&gt;%
   padding-right: 5px;
 }
 
-#hjrofiemzj .gt_left {
+#zwvvxwhuna .gt_left {
   text-align: left;
 }
 
-#hjrofiemzj .gt_center {
+#zwvvxwhuna .gt_center {
   text-align: center;
 }
 
-#hjrofiemzj .gt_right {
+#zwvvxwhuna .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#hjrofiemzj .gt_font_normal {
+#zwvvxwhuna .gt_font_normal {
   font-weight: normal;
 }
 
-#hjrofiemzj .gt_font_bold {
+#zwvvxwhuna .gt_font_bold {
   font-weight: bold;
 }
 
-#hjrofiemzj .gt_font_italic {
+#zwvvxwhuna .gt_font_italic {
   font-style: italic;
 }
 
-#hjrofiemzj .gt_super {
+#zwvvxwhuna .gt_super {
   font-size: 65%;
 }
 
-#hjrofiemzj .gt_footnote_marks {
+#zwvvxwhuna .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#hjrofiemzj .gt_asterisk {
+#zwvvxwhuna .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#hjrofiemzj .gt_indent_1 {
+#zwvvxwhuna .gt_indent_1 {
   text-indent: 5px;
 }
 
-#hjrofiemzj .gt_indent_2 {
+#zwvvxwhuna .gt_indent_2 {
   text-indent: 10px;
 }
 
-#hjrofiemzj .gt_indent_3 {
+#zwvvxwhuna .gt_indent_3 {
   text-indent: 15px;
 }
 
-#hjrofiemzj .gt_indent_4 {
+#zwvvxwhuna .gt_indent_4 {
   text-indent: 20px;
 }
 
-#hjrofiemzj .gt_indent_5 {
+#zwvvxwhuna .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -768,13 +768,13 @@ head(top, 20) %&gt;%
   <thead class="gt_col_headings">
     <tr>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Year">Year</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall Pick">Overall Pick</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall">Overall</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Draft Team">Draft Team</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Name">Name</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year Played">Last Year Played</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year">Last Year</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Amateur Team">Amateur Team</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL Point Shares per Game">Career NHL Point Shares per Game</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career NHL Point Shares per Game">Expected Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL PSPG">Career NHL PSPG</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career PSPG">Expected Career PSPG</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Difference">Difference</th>
     </tr>
   </thead>
@@ -978,13 +978,13 @@ head(bottom, 20) %&gt;%
   gt() %&gt;%
   cols_label(
     year = &quot;Year&quot;,
-    overall_pick = &quot;Overall Pick&quot;, 
+    overall_pick = &quot;Overall&quot;, 
     team = &quot;Draft Team&quot;, 
     player = &quot;Name&quot;, 
-    to_year = &quot;Last Year Played&quot;, 
+    to_year = &quot;Last Year&quot;, 
     amateur_team = &quot;Amateur Team&quot;, 
-    pspg = &quot;Career NHL Point Shares per Game&quot;, 
-    xpspg = &quot;Expected Career NHL Point Shares per Game&quot;, 
+    pspg = &quot;Career NHL PSPG&quot;, 
+    xpspg = &quot;Expected Career PSPG&quot;, 
     residualpspg = &quot;Difference&quot;
    
   ) %&gt;%
@@ -1011,12 +1011,12 @@ head(bottom, 20) %&gt;%
      )
    ) %&gt;%
   opt_row_striping()</code></pre>
-<div id="yitgbstbzm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="qetxwwhabt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#yitgbstbzm .gt_table {
+#qetxwwhabt .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -1041,7 +1041,7 @@ head(bottom, 20) %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#yitgbstbzm .gt_heading {
+#qetxwwhabt .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1053,12 +1053,12 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#yitgbstbzm .gt_caption {
+#qetxwwhabt .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#yitgbstbzm .gt_title {
+#qetxwwhabt .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1070,7 +1070,7 @@ head(bottom, 20) %&gt;%
   border-bottom-width: 0;
 }
 
-#yitgbstbzm .gt_subtitle {
+#qetxwwhabt .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1082,13 +1082,13 @@ head(bottom, 20) %&gt;%
   border-top-width: 0;
 }
 
-#yitgbstbzm .gt_bottom_border {
+#qetxwwhabt .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#yitgbstbzm .gt_col_headings {
+#qetxwwhabt .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1103,7 +1103,7 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#yitgbstbzm .gt_col_heading {
+#qetxwwhabt .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1123,7 +1123,7 @@ head(bottom, 20) %&gt;%
   overflow-x: hidden;
 }
 
-#yitgbstbzm .gt_column_spanner_outer {
+#qetxwwhabt .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1135,15 +1135,15 @@ head(bottom, 20) %&gt;%
   padding-right: 4px;
 }
 
-#yitgbstbzm .gt_column_spanner_outer:first-child {
+#qetxwwhabt .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#yitgbstbzm .gt_column_spanner_outer:last-child {
+#qetxwwhabt .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#yitgbstbzm .gt_column_spanner {
+#qetxwwhabt .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1155,7 +1155,7 @@ head(bottom, 20) %&gt;%
   width: 100%;
 }
 
-#yitgbstbzm .gt_group_heading {
+#qetxwwhabt .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1181,7 +1181,7 @@ head(bottom, 20) %&gt;%
   text-align: left;
 }
 
-#yitgbstbzm .gt_empty_group_heading {
+#qetxwwhabt .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1196,15 +1196,15 @@ head(bottom, 20) %&gt;%
   vertical-align: middle;
 }
 
-#yitgbstbzm .gt_from_md > :first-child {
+#qetxwwhabt .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#yitgbstbzm .gt_from_md > :last-child {
+#qetxwwhabt .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#yitgbstbzm .gt_row {
+#qetxwwhabt .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1223,7 +1223,7 @@ head(bottom, 20) %&gt;%
   overflow-x: hidden;
 }
 
-#yitgbstbzm .gt_stub {
+#qetxwwhabt .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1236,7 +1236,7 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#yitgbstbzm .gt_stub_row_group {
+#qetxwwhabt .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1250,11 +1250,11 @@ head(bottom, 20) %&gt;%
   vertical-align: top;
 }
 
-#yitgbstbzm .gt_row_group_first td {
+#qetxwwhabt .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#yitgbstbzm .gt_summary_row {
+#qetxwwhabt .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1264,16 +1264,16 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#yitgbstbzm .gt_first_summary_row {
+#qetxwwhabt .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#yitgbstbzm .gt_first_summary_row.thick {
+#qetxwwhabt .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#yitgbstbzm .gt_last_summary_row {
+#qetxwwhabt .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1283,7 +1283,7 @@ head(bottom, 20) %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#yitgbstbzm .gt_grand_summary_row {
+#qetxwwhabt .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1293,7 +1293,7 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#yitgbstbzm .gt_first_grand_summary_row {
+#qetxwwhabt .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1303,11 +1303,11 @@ head(bottom, 20) %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#yitgbstbzm .gt_striped {
+#qetxwwhabt .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#yitgbstbzm .gt_table_body {
+#qetxwwhabt .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1316,7 +1316,7 @@ head(bottom, 20) %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#yitgbstbzm .gt_footnotes {
+#qetxwwhabt .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1330,7 +1330,7 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#yitgbstbzm .gt_footnote {
+#qetxwwhabt .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -1339,7 +1339,7 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#yitgbstbzm .gt_sourcenotes {
+#qetxwwhabt .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1353,7 +1353,7 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#yitgbstbzm .gt_sourcenote {
+#qetxwwhabt .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1361,64 +1361,64 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#yitgbstbzm .gt_left {
+#qetxwwhabt .gt_left {
   text-align: left;
 }
 
-#yitgbstbzm .gt_center {
+#qetxwwhabt .gt_center {
   text-align: center;
 }
 
-#yitgbstbzm .gt_right {
+#qetxwwhabt .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#yitgbstbzm .gt_font_normal {
+#qetxwwhabt .gt_font_normal {
   font-weight: normal;
 }
 
-#yitgbstbzm .gt_font_bold {
+#qetxwwhabt .gt_font_bold {
   font-weight: bold;
 }
 
-#yitgbstbzm .gt_font_italic {
+#qetxwwhabt .gt_font_italic {
   font-style: italic;
 }
 
-#yitgbstbzm .gt_super {
+#qetxwwhabt .gt_super {
   font-size: 65%;
 }
 
-#yitgbstbzm .gt_footnote_marks {
+#qetxwwhabt .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#yitgbstbzm .gt_asterisk {
+#qetxwwhabt .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#yitgbstbzm .gt_indent_1 {
+#qetxwwhabt .gt_indent_1 {
   text-indent: 5px;
 }
 
-#yitgbstbzm .gt_indent_2 {
+#qetxwwhabt .gt_indent_2 {
   text-indent: 10px;
 }
 
-#yitgbstbzm .gt_indent_3 {
+#qetxwwhabt .gt_indent_3 {
   text-indent: 15px;
 }
 
-#yitgbstbzm .gt_indent_4 {
+#qetxwwhabt .gt_indent_4 {
   text-indent: 20px;
 }
 
-#yitgbstbzm .gt_indent_5 {
+#qetxwwhabt .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1434,13 +1434,13 @@ head(bottom, 20) %&gt;%
   <thead class="gt_col_headings">
     <tr>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Year">Year</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall Pick">Overall Pick</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall">Overall</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Draft Team">Draft Team</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Name">Name</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year Played">Last Year Played</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year">Last Year</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Amateur Team">Amateur Team</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL Point Shares per Game">Career NHL Point Shares per Game</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career NHL Point Shares per Game">Expected Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL PSPG">Career NHL PSPG</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career PSPG">Expected Career PSPG</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Difference">Difference</th>
     </tr>
   </thead>
@@ -1645,13 +1645,13 @@ head(bottom, 20) %&gt;%
   gt() %&gt;%
   cols_label(
     year = &quot;Year&quot;,
-    overall_pick = &quot;Overall Pick&quot;, 
+    overall_pick = &quot;Overall&quot;, 
     team = &quot;Draft Team&quot;, 
     player = &quot;Name&quot;, 
-    to_year = &quot;Last Year Played&quot;, 
+    to_year = &quot;Last Year&quot;, 
     amateur_team = &quot;Amateur Team&quot;, 
-    pspg = &quot;Career NHL Point Shares per Game&quot;, 
-    xpspg = &quot;Expected Career NHL Point Shares per Game&quot;, 
+    pspg = &quot;Career NHL PSPG&quot;, 
+    xpspg = &quot;Expected Career PSPG&quot;, 
     residualpspg = &quot;Difference&quot;
    
   ) %&gt;%
@@ -1678,12 +1678,12 @@ head(bottom, 20) %&gt;%
      )
    ) %&gt;%
   opt_row_striping()</code></pre>
-<div id="atolzwjmiy" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="kevquzhmam" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#atolzwjmiy .gt_table {
+#kevquzhmam .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -1708,7 +1708,7 @@ head(bottom, 20) %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#atolzwjmiy .gt_heading {
+#kevquzhmam .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1720,12 +1720,12 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#atolzwjmiy .gt_caption {
+#kevquzhmam .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#atolzwjmiy .gt_title {
+#kevquzhmam .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1737,7 +1737,7 @@ head(bottom, 20) %&gt;%
   border-bottom-width: 0;
 }
 
-#atolzwjmiy .gt_subtitle {
+#kevquzhmam .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1749,13 +1749,13 @@ head(bottom, 20) %&gt;%
   border-top-width: 0;
 }
 
-#atolzwjmiy .gt_bottom_border {
+#kevquzhmam .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#atolzwjmiy .gt_col_headings {
+#kevquzhmam .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1770,7 +1770,7 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#atolzwjmiy .gt_col_heading {
+#kevquzhmam .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1790,7 +1790,7 @@ head(bottom, 20) %&gt;%
   overflow-x: hidden;
 }
 
-#atolzwjmiy .gt_column_spanner_outer {
+#kevquzhmam .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1802,15 +1802,15 @@ head(bottom, 20) %&gt;%
   padding-right: 4px;
 }
 
-#atolzwjmiy .gt_column_spanner_outer:first-child {
+#kevquzhmam .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#atolzwjmiy .gt_column_spanner_outer:last-child {
+#kevquzhmam .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#atolzwjmiy .gt_column_spanner {
+#kevquzhmam .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1822,7 +1822,7 @@ head(bottom, 20) %&gt;%
   width: 100%;
 }
 
-#atolzwjmiy .gt_group_heading {
+#kevquzhmam .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1848,7 +1848,7 @@ head(bottom, 20) %&gt;%
   text-align: left;
 }
 
-#atolzwjmiy .gt_empty_group_heading {
+#kevquzhmam .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1863,15 +1863,15 @@ head(bottom, 20) %&gt;%
   vertical-align: middle;
 }
 
-#atolzwjmiy .gt_from_md > :first-child {
+#kevquzhmam .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#atolzwjmiy .gt_from_md > :last-child {
+#kevquzhmam .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#atolzwjmiy .gt_row {
+#kevquzhmam .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1890,7 +1890,7 @@ head(bottom, 20) %&gt;%
   overflow-x: hidden;
 }
 
-#atolzwjmiy .gt_stub {
+#kevquzhmam .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1903,7 +1903,7 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#atolzwjmiy .gt_stub_row_group {
+#kevquzhmam .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1917,11 +1917,11 @@ head(bottom, 20) %&gt;%
   vertical-align: top;
 }
 
-#atolzwjmiy .gt_row_group_first td {
+#kevquzhmam .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#atolzwjmiy .gt_summary_row {
+#kevquzhmam .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1931,16 +1931,16 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#atolzwjmiy .gt_first_summary_row {
+#kevquzhmam .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#atolzwjmiy .gt_first_summary_row.thick {
+#kevquzhmam .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#atolzwjmiy .gt_last_summary_row {
+#kevquzhmam .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1950,7 +1950,7 @@ head(bottom, 20) %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#atolzwjmiy .gt_grand_summary_row {
+#kevquzhmam .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1960,7 +1960,7 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#atolzwjmiy .gt_first_grand_summary_row {
+#kevquzhmam .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1970,11 +1970,11 @@ head(bottom, 20) %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#atolzwjmiy .gt_striped {
+#kevquzhmam .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#atolzwjmiy .gt_table_body {
+#kevquzhmam .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1983,7 +1983,7 @@ head(bottom, 20) %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#atolzwjmiy .gt_footnotes {
+#kevquzhmam .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1997,7 +1997,7 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#atolzwjmiy .gt_footnote {
+#kevquzhmam .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -2006,7 +2006,7 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#atolzwjmiy .gt_sourcenotes {
+#kevquzhmam .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2020,7 +2020,7 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#atolzwjmiy .gt_sourcenote {
+#kevquzhmam .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2028,64 +2028,64 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#atolzwjmiy .gt_left {
+#kevquzhmam .gt_left {
   text-align: left;
 }
 
-#atolzwjmiy .gt_center {
+#kevquzhmam .gt_center {
   text-align: center;
 }
 
-#atolzwjmiy .gt_right {
+#kevquzhmam .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#atolzwjmiy .gt_font_normal {
+#kevquzhmam .gt_font_normal {
   font-weight: normal;
 }
 
-#atolzwjmiy .gt_font_bold {
+#kevquzhmam .gt_font_bold {
   font-weight: bold;
 }
 
-#atolzwjmiy .gt_font_italic {
+#kevquzhmam .gt_font_italic {
   font-style: italic;
 }
 
-#atolzwjmiy .gt_super {
+#kevquzhmam .gt_super {
   font-size: 65%;
 }
 
-#atolzwjmiy .gt_footnote_marks {
+#kevquzhmam .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#atolzwjmiy .gt_asterisk {
+#kevquzhmam .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#atolzwjmiy .gt_indent_1 {
+#kevquzhmam .gt_indent_1 {
   text-indent: 5px;
 }
 
-#atolzwjmiy .gt_indent_2 {
+#kevquzhmam .gt_indent_2 {
   text-indent: 10px;
 }
 
-#atolzwjmiy .gt_indent_3 {
+#kevquzhmam .gt_indent_3 {
   text-indent: 15px;
 }
 
-#atolzwjmiy .gt_indent_4 {
+#kevquzhmam .gt_indent_4 {
   text-indent: 20px;
 }
 
-#atolzwjmiy .gt_indent_5 {
+#kevquzhmam .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -2101,13 +2101,13 @@ head(bottom, 20) %&gt;%
   <thead class="gt_col_headings">
     <tr>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Year">Year</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall Pick">Overall Pick</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall">Overall</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Draft Team">Draft Team</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Name">Name</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year Played">Last Year Played</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year">Last Year</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Amateur Team">Amateur Team</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL Point Shares per Game">Career NHL Point Shares per Game</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career NHL Point Shares per Game">Expected Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL PSPG">Career NHL PSPG</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career PSPG">Expected Career PSPG</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Difference">Difference</th>
     </tr>
   </thead>
@@ -2311,13 +2311,13 @@ head(bottom, 20) %&gt;%
   gt() %&gt;%
   cols_label(
     year = &quot;Year&quot;,
-    overall_pick = &quot;Overall Pick&quot;, 
+    overall_pick = &quot;Overall&quot;, 
     team = &quot;Draft Team&quot;, 
     player = &quot;Name&quot;, 
-    to_year = &quot;Last Year Played&quot;, 
+    to_year = &quot;Last Year&quot;, 
     amateur_team = &quot;Amateur Team&quot;, 
-    pspg = &quot;Career NHL Point Shares per Game&quot;, 
-    xpspg = &quot;Expected Career NHL Point Shares per Game&quot;, 
+    pspg = &quot;Career NHL PSPG&quot;, 
+    xpspg = &quot;Expected Career PSPG&quot;, 
     residualpspg = &quot;Difference&quot;
    
   ) %&gt;%
@@ -2344,12 +2344,12 @@ head(bottom, 20) %&gt;%
      )
    ) %&gt;%
   opt_row_striping()</code></pre>
-<div id="nbrxfchggv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="lccgqxobbm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#nbrxfchggv .gt_table {
+#lccgqxobbm .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -2374,7 +2374,7 @@ head(bottom, 20) %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#nbrxfchggv .gt_heading {
+#lccgqxobbm .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2386,12 +2386,12 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#nbrxfchggv .gt_caption {
+#lccgqxobbm .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#nbrxfchggv .gt_title {
+#lccgqxobbm .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2403,7 +2403,7 @@ head(bottom, 20) %&gt;%
   border-bottom-width: 0;
 }
 
-#nbrxfchggv .gt_subtitle {
+#lccgqxobbm .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2415,13 +2415,13 @@ head(bottom, 20) %&gt;%
   border-top-width: 0;
 }
 
-#nbrxfchggv .gt_bottom_border {
+#lccgqxobbm .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#nbrxfchggv .gt_col_headings {
+#lccgqxobbm .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2436,7 +2436,7 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#nbrxfchggv .gt_col_heading {
+#lccgqxobbm .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2456,7 +2456,7 @@ head(bottom, 20) %&gt;%
   overflow-x: hidden;
 }
 
-#nbrxfchggv .gt_column_spanner_outer {
+#lccgqxobbm .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2468,15 +2468,15 @@ head(bottom, 20) %&gt;%
   padding-right: 4px;
 }
 
-#nbrxfchggv .gt_column_spanner_outer:first-child {
+#lccgqxobbm .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#nbrxfchggv .gt_column_spanner_outer:last-child {
+#lccgqxobbm .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#nbrxfchggv .gt_column_spanner {
+#lccgqxobbm .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2488,7 +2488,7 @@ head(bottom, 20) %&gt;%
   width: 100%;
 }
 
-#nbrxfchggv .gt_group_heading {
+#lccgqxobbm .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2514,7 +2514,7 @@ head(bottom, 20) %&gt;%
   text-align: left;
 }
 
-#nbrxfchggv .gt_empty_group_heading {
+#lccgqxobbm .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2529,15 +2529,15 @@ head(bottom, 20) %&gt;%
   vertical-align: middle;
 }
 
-#nbrxfchggv .gt_from_md > :first-child {
+#lccgqxobbm .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#nbrxfchggv .gt_from_md > :last-child {
+#lccgqxobbm .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#nbrxfchggv .gt_row {
+#lccgqxobbm .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2556,7 +2556,7 @@ head(bottom, 20) %&gt;%
   overflow-x: hidden;
 }
 
-#nbrxfchggv .gt_stub {
+#lccgqxobbm .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2569,7 +2569,7 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#nbrxfchggv .gt_stub_row_group {
+#lccgqxobbm .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2583,11 +2583,11 @@ head(bottom, 20) %&gt;%
   vertical-align: top;
 }
 
-#nbrxfchggv .gt_row_group_first td {
+#lccgqxobbm .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#nbrxfchggv .gt_summary_row {
+#lccgqxobbm .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2597,16 +2597,16 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#nbrxfchggv .gt_first_summary_row {
+#lccgqxobbm .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#nbrxfchggv .gt_first_summary_row.thick {
+#lccgqxobbm .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#nbrxfchggv .gt_last_summary_row {
+#lccgqxobbm .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2616,7 +2616,7 @@ head(bottom, 20) %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#nbrxfchggv .gt_grand_summary_row {
+#lccgqxobbm .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2626,7 +2626,7 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#nbrxfchggv .gt_first_grand_summary_row {
+#lccgqxobbm .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2636,11 +2636,11 @@ head(bottom, 20) %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#nbrxfchggv .gt_striped {
+#lccgqxobbm .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#nbrxfchggv .gt_table_body {
+#lccgqxobbm .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2649,7 +2649,7 @@ head(bottom, 20) %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#nbrxfchggv .gt_footnotes {
+#lccgqxobbm .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2663,7 +2663,7 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#nbrxfchggv .gt_footnote {
+#lccgqxobbm .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -2672,7 +2672,7 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#nbrxfchggv .gt_sourcenotes {
+#lccgqxobbm .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2686,7 +2686,7 @@ head(bottom, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#nbrxfchggv .gt_sourcenote {
+#lccgqxobbm .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2694,64 +2694,64 @@ head(bottom, 20) %&gt;%
   padding-right: 5px;
 }
 
-#nbrxfchggv .gt_left {
+#lccgqxobbm .gt_left {
   text-align: left;
 }
 
-#nbrxfchggv .gt_center {
+#lccgqxobbm .gt_center {
   text-align: center;
 }
 
-#nbrxfchggv .gt_right {
+#lccgqxobbm .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#nbrxfchggv .gt_font_normal {
+#lccgqxobbm .gt_font_normal {
   font-weight: normal;
 }
 
-#nbrxfchggv .gt_font_bold {
+#lccgqxobbm .gt_font_bold {
   font-weight: bold;
 }
 
-#nbrxfchggv .gt_font_italic {
+#lccgqxobbm .gt_font_italic {
   font-style: italic;
 }
 
-#nbrxfchggv .gt_super {
+#lccgqxobbm .gt_super {
   font-size: 65%;
 }
 
-#nbrxfchggv .gt_footnote_marks {
+#lccgqxobbm .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#nbrxfchggv .gt_asterisk {
+#lccgqxobbm .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#nbrxfchggv .gt_indent_1 {
+#lccgqxobbm .gt_indent_1 {
   text-indent: 5px;
 }
 
-#nbrxfchggv .gt_indent_2 {
+#lccgqxobbm .gt_indent_2 {
   text-indent: 10px;
 }
 
-#nbrxfchggv .gt_indent_3 {
+#lccgqxobbm .gt_indent_3 {
   text-indent: 15px;
 }
 
-#nbrxfchggv .gt_indent_4 {
+#lccgqxobbm .gt_indent_4 {
   text-indent: 20px;
 }
 
-#nbrxfchggv .gt_indent_5 {
+#lccgqxobbm .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -2767,13 +2767,13 @@ head(bottom, 20) %&gt;%
   <thead class="gt_col_headings">
     <tr>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Year">Year</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall Pick">Overall Pick</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall">Overall</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Draft Team">Draft Team</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Name">Name</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year Played">Last Year Played</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year">Last Year</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Amateur Team">Amateur Team</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL Point Shares per Game">Career NHL Point Shares per Game</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career NHL Point Shares per Game">Expected Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL PSPG">Career NHL PSPG</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career PSPG">Expected Career PSPG</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Difference">Difference</th>
     </tr>
   </thead>
@@ -2977,13 +2977,13 @@ head(top, 20) %&gt;%
   gt() %&gt;%
   cols_label(
     year = &quot;Year&quot;,
-    overall_pick = &quot;Overall Pick&quot;, 
+    overall_pick = &quot;Overall&quot;, 
     team = &quot;Draft Team&quot;, 
     player = &quot;Name&quot;, 
-    to_year = &quot;Last Year Played&quot;, 
+    to_year = &quot;Last Year&quot;, 
     amateur_team = &quot;Amateur Team&quot;, 
-    pspg = &quot;Career NHL Point Shares per Game&quot;, 
-    xpspg = &quot;Expected Career NHL Point Shares per Game&quot;, 
+    pspg = &quot;Career NHL PSPG&quot;, 
+    xpspg = &quot;Expected Career PSPG&quot;, 
     residualpspg = &quot;Difference&quot;
    
   ) %&gt;%
@@ -3010,12 +3010,12 @@ head(top, 20) %&gt;%
      )
    ) %&gt;%
   opt_row_striping()</code></pre>
-<div id="eppivdlsnp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="bmygxtnzjz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#eppivdlsnp .gt_table {
+#bmygxtnzjz .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -3040,7 +3040,7 @@ head(top, 20) %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#eppivdlsnp .gt_heading {
+#bmygxtnzjz .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -3052,12 +3052,12 @@ head(top, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#eppivdlsnp .gt_caption {
+#bmygxtnzjz .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#eppivdlsnp .gt_title {
+#bmygxtnzjz .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -3069,7 +3069,7 @@ head(top, 20) %&gt;%
   border-bottom-width: 0;
 }
 
-#eppivdlsnp .gt_subtitle {
+#bmygxtnzjz .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -3081,13 +3081,13 @@ head(top, 20) %&gt;%
   border-top-width: 0;
 }
 
-#eppivdlsnp .gt_bottom_border {
+#bmygxtnzjz .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#eppivdlsnp .gt_col_headings {
+#bmygxtnzjz .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3102,7 +3102,7 @@ head(top, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#eppivdlsnp .gt_col_heading {
+#bmygxtnzjz .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3122,7 +3122,7 @@ head(top, 20) %&gt;%
   overflow-x: hidden;
 }
 
-#eppivdlsnp .gt_column_spanner_outer {
+#bmygxtnzjz .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3134,15 +3134,15 @@ head(top, 20) %&gt;%
   padding-right: 4px;
 }
 
-#eppivdlsnp .gt_column_spanner_outer:first-child {
+#bmygxtnzjz .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#eppivdlsnp .gt_column_spanner_outer:last-child {
+#bmygxtnzjz .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#eppivdlsnp .gt_column_spanner {
+#bmygxtnzjz .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3154,7 +3154,7 @@ head(top, 20) %&gt;%
   width: 100%;
 }
 
-#eppivdlsnp .gt_group_heading {
+#bmygxtnzjz .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3180,7 +3180,7 @@ head(top, 20) %&gt;%
   text-align: left;
 }
 
-#eppivdlsnp .gt_empty_group_heading {
+#bmygxtnzjz .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3195,15 +3195,15 @@ head(top, 20) %&gt;%
   vertical-align: middle;
 }
 
-#eppivdlsnp .gt_from_md > :first-child {
+#bmygxtnzjz .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#eppivdlsnp .gt_from_md > :last-child {
+#bmygxtnzjz .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#eppivdlsnp .gt_row {
+#bmygxtnzjz .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3222,7 +3222,7 @@ head(top, 20) %&gt;%
   overflow-x: hidden;
 }
 
-#eppivdlsnp .gt_stub {
+#bmygxtnzjz .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3235,7 +3235,7 @@ head(top, 20) %&gt;%
   padding-right: 5px;
 }
 
-#eppivdlsnp .gt_stub_row_group {
+#bmygxtnzjz .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3249,11 +3249,11 @@ head(top, 20) %&gt;%
   vertical-align: top;
 }
 
-#eppivdlsnp .gt_row_group_first td {
+#bmygxtnzjz .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#eppivdlsnp .gt_summary_row {
+#bmygxtnzjz .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3263,16 +3263,16 @@ head(top, 20) %&gt;%
   padding-right: 5px;
 }
 
-#eppivdlsnp .gt_first_summary_row {
+#bmygxtnzjz .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#eppivdlsnp .gt_first_summary_row.thick {
+#bmygxtnzjz .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#eppivdlsnp .gt_last_summary_row {
+#bmygxtnzjz .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3282,7 +3282,7 @@ head(top, 20) %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#eppivdlsnp .gt_grand_summary_row {
+#bmygxtnzjz .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3292,7 +3292,7 @@ head(top, 20) %&gt;%
   padding-right: 5px;
 }
 
-#eppivdlsnp .gt_first_grand_summary_row {
+#bmygxtnzjz .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3302,11 +3302,11 @@ head(top, 20) %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#eppivdlsnp .gt_striped {
+#bmygxtnzjz .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#eppivdlsnp .gt_table_body {
+#bmygxtnzjz .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3315,7 +3315,7 @@ head(top, 20) %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#eppivdlsnp .gt_footnotes {
+#bmygxtnzjz .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3329,7 +3329,7 @@ head(top, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#eppivdlsnp .gt_footnote {
+#bmygxtnzjz .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -3338,7 +3338,7 @@ head(top, 20) %&gt;%
   padding-right: 5px;
 }
 
-#eppivdlsnp .gt_sourcenotes {
+#bmygxtnzjz .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3352,7 +3352,7 @@ head(top, 20) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#eppivdlsnp .gt_sourcenote {
+#bmygxtnzjz .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3360,64 +3360,64 @@ head(top, 20) %&gt;%
   padding-right: 5px;
 }
 
-#eppivdlsnp .gt_left {
+#bmygxtnzjz .gt_left {
   text-align: left;
 }
 
-#eppivdlsnp .gt_center {
+#bmygxtnzjz .gt_center {
   text-align: center;
 }
 
-#eppivdlsnp .gt_right {
+#bmygxtnzjz .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#eppivdlsnp .gt_font_normal {
+#bmygxtnzjz .gt_font_normal {
   font-weight: normal;
 }
 
-#eppivdlsnp .gt_font_bold {
+#bmygxtnzjz .gt_font_bold {
   font-weight: bold;
 }
 
-#eppivdlsnp .gt_font_italic {
+#bmygxtnzjz .gt_font_italic {
   font-style: italic;
 }
 
-#eppivdlsnp .gt_super {
+#bmygxtnzjz .gt_super {
   font-size: 65%;
 }
 
-#eppivdlsnp .gt_footnote_marks {
+#bmygxtnzjz .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#eppivdlsnp .gt_asterisk {
+#bmygxtnzjz .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#eppivdlsnp .gt_indent_1 {
+#bmygxtnzjz .gt_indent_1 {
   text-indent: 5px;
 }
 
-#eppivdlsnp .gt_indent_2 {
+#bmygxtnzjz .gt_indent_2 {
   text-indent: 10px;
 }
 
-#eppivdlsnp .gt_indent_3 {
+#bmygxtnzjz .gt_indent_3 {
   text-indent: 15px;
 }
 
-#eppivdlsnp .gt_indent_4 {
+#bmygxtnzjz .gt_indent_4 {
   text-indent: 20px;
 }
 
-#eppivdlsnp .gt_indent_5 {
+#bmygxtnzjz .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -3433,13 +3433,13 @@ head(top, 20) %&gt;%
   <thead class="gt_col_headings">
     <tr>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Year">Year</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall Pick">Overall Pick</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Overall">Overall</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Draft Team">Draft Team</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Name">Name</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year Played">Last Year Played</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Last Year">Last Year</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Amateur Team">Amateur Team</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL Point Shares per Game">Career NHL Point Shares per Game</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career NHL Point Shares per Game">Expected Career NHL Point Shares per Game</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Career NHL PSPG">Career NHL PSPG</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Expected Career PSPG">Expected Career PSPG</th>
       <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="border-bottom-width: 3px; border-bottom-style: solid; border-bottom-color: #000000; font-size: 12; font-weight: bold;" scope="col" id="Difference">Difference</th>
     </tr>
   </thead>
@@ -3639,8 +3639,9 @@ head(top, 20) %&gt;%
 by_overall &lt;- draft_data %&gt;% group_by(overall_pick) %&gt;% summarise(count=n(), nhlers=sum(is_nhler))
 by_overall &lt;- by_overall %&gt;% mutate(probability = 100*nhlers/count)
 ggplot(by_overall, aes(x=overall_pick, y=probability)) + 
-  geom_point(col = &#39;blue&#39;) + 
-  stat_smooth(method=&quot;lm&quot;, formula=y ~ log(x),colour=&quot;blue&quot;)</code></pre>
+  geom_point(col = &#39;black&#39;) + 
+  labs(title=&quot;After The First Round, Chances of Making the NHL Much Slimmer&quot;, subtitle=&quot;Historically, the 20th overall pick has more than two times better odds to make the NHL than the 70th pick&quot;, x = &quot;Position Drafted&quot;, y= &quot;Probability of Being NHLer&quot;) +
+  stat_smooth(method=&quot;lm&quot;, formula=y ~ log(x),colour=&quot;red&quot;)</code></pre>
 <p><img src="https://jetsonku.github.io/sportsdatablog/2022/12/05/nhl-draft-pick-value/index_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <pre class="r"><code>fit &lt;- lm(probability ~ log(overall_pick), data=by_overall)
 pred_prob &lt;- fit %&gt;% predict(by_overall)
