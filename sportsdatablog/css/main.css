@@ -44,6 +44,10 @@ img {
   position: relative;
 }
 
+div.main-container {
+  max-width: 1600px !important;
+}
+
 .header {
   padding: 20px 0;
   position: relative;
